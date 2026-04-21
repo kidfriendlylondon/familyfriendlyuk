@@ -1,0 +1,151 @@
+---
+const nav = [
+  { label: 'Find Restaurants', href: '/' },
+  { label: 'By Region', href: '/regions' },
+  { label: 'Suggest a Place', href: '/suggest' },
+  { label: 'Get Featured', href: '/get-featured' },
+];
+const path = Astro.url.pathname;
+---
+<header class="site-header">
+  <div class="container header-inner">
+    <a href="/" class="logo" aria-label="Family Friendly UK — home">
+      <span class="logo-leaf">🌿</span>
+      <div class="logo-text">
+        <span class="logo-main">Family Friendly UK</span>
+        <span class="logo-sub">Family restaurants across Britain</span>
+      </div>
+    </a>
+
+    <nav class="nav-links" aria-label="Main navigation">
+      {nav.map(item => (
+        <a
+          href={item.href}
+          class:list={['nav-link', { active: path === item.href || (item.href !== '/' && path.startsWith(item.href)) }]}
+        >
+          {item.label}
+        </a>
+      ))}
+    </nav>
+
+    <button class="nav-suggest btn btn-terracotta btn-sm" onclick="window.location='/suggest'">
+      Suggest a restaurant
+    </button>
+
+    <button class="hamburger" aria-label="Open menu" aria-expanded="false" id="hamburger">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+
+  <div class="mobile-nav" id="mobile-nav" hidden>
+    {nav.map(item => (
+      <a href={item.href} class="mobile-nav-link">{item.label}</a>
+    ))}
+    <a href="/suggest" class="btn btn-terracotta btn-sm" style="margin-top:8px;align-self:flex-start">
+      Suggest a restaurant
+    </a>
+  </div>
+</header>
+
+<style>
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: var(--white);
+  border-bottom: 1px solid var(--border);
+  box-shadow: 0 1px 4px rgba(45,80,22,0.06);
+}
+.header-inner {
+  display: flex;
+  align-items: center;
+  gap: 32px;
+  height: var(--nav-h);
+}
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+.logo-leaf { font-size: 1.5rem; }
+.logo-text { display: flex; flex-direction: column; line-height: 1.2; }
+.logo-main {
+  font-family: var(--font-serif);
+  font-size: 1.1rem;
+  color: var(--green);
+  font-weight: normal;
+}
+.logo-sub {
+  font-size: 0.6875rem;
+  color: var(--text-muted);
+  letter-spacing: 0.02em;
+}
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex: 1;
+}
+.nav-link {
+  padding: 8px 14px;
+  border-radius: var(--radius-sm);
+  font-size: 0.9375rem;
+  color: var(--text-muted);
+  transition: color 0.15s, background 0.15s;
+  white-space: nowrap;
+}
+.nav-link:hover, .nav-link.active {
+  color: var(--green);
+  background: var(--green-pale);
+}
+.nav-suggest { flex-shrink: 0; }
+.hamburger {
+  display: none;
+  flex-direction: column;
+  gap: 5px;
+  padding: 8px;
+  background: none;
+  border: none;
+  margin-left: auto;
+}
+.hamburger span {
+  display: block;
+  width: 22px;
+  height: 2px;
+  background: var(--text);
+  transition: all 0.2s;
+  border-radius: 2px;
+}
+.mobile-nav {
+  display: flex;
+  flex-direction: column;
+  padding: 16px 24px 20px;
+  background: var(--white);
+  border-top: 1px solid var(--border);
+  gap: 4px;
+}
+.mobile-nav-link {
+  padding: 10px 12px;
+  color: var(--text);
+  border-radius: var(--radius-sm);
+  font-size: 1rem;
+}
+.mobile-nav-link:hover { background: var(--green-pale); color: var(--green); }
+
+@media (max-width: 860px) {
+  .nav-links { display: none; }
+  .nav-suggest { display: none; }
+  .hamburger { display: flex; }
+}
+</style>
+
+<script>
+const ham = document.getElementById('hamburger');
+const nav = document.getElementById('mobile-nav');
+ham?.addEventListener('click', () => {
+  const open = nav?.hidden === false;
+  if (nav) nav.hidden = open;
+  ham.setAttribute('aria-expanded', String(!open));
+});
+</script>

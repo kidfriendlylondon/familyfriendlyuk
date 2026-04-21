@@ -1,0 +1,88 @@
+---
+interface Props {
+  variant?: 'hero' | 'inline' | 'compact';
+  headline?: string;
+  subline?: string;
+}
+const {
+  variant = 'inline',
+  headline = "Get the free guide: UK's best family restaurants",
+  subline = "50+ hand-picked restaurants across the UK, with our honest family verdict on each one. Free, no spam, unsubscribe any time."
+} = Astro.props;
+---
+
+<div class:list={['email-capture', `email-capture--${variant}`]}>
+  <div class="email-capture-inner">
+    <div class="email-capture-text">
+      <h3>{headline}</h3>
+      <p>{subline}</p>
+    </div>
+    <form class="email-form" action="https://formspree.io/f/xeojgvdl" method="POST">
+      <div class="email-form-row">
+        <label for="email-input" class="visually-hidden">Your email address</label>
+        <input
+          id="email-input"
+          type="email"
+          name="email"
+          placeholder="Your email address"
+          required
+          class="form-input email-input"
+          autocomplete="email"
+        />
+        <input type="hidden" name="form-name" value="email-guide" />
+        <button type="submit" class="btn btn-terracotta">
+          Send me the guide
+        </button>
+      </div>
+      <p class="email-legal">No spam. Unsubscribe any time. We take privacy seriously.</p>
+    </form>
+  </div>
+</div>
+
+<style>
+.email-capture {
+  background: var(--green);
+  border-radius: var(--radius);
+  padding: 40px;
+  color: var(--white);
+}
+.email-capture--compact { padding: 28px 32px; }
+.email-capture--hero {
+  background: rgba(255,255,255,0.12);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: var(--radius);
+  padding: 32px 36px;
+}
+.email-capture-inner { display: flex; flex-direction: column; gap: 20px; }
+.email-capture-text h3 {
+  font-family: var(--font-serif);
+  font-size: 1.4rem;
+  color: var(--white);
+  margin-bottom: 8px;
+}
+.email-capture-text p {
+  font-size: 0.9375rem;
+  color: rgba(255,255,255,0.78);
+  line-height: 1.6;
+}
+.email-form-row {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.email-input {
+  flex: 1;
+  min-width: 220px;
+  background: rgba(255,255,255,0.12);
+  border-color: rgba(255,255,255,0.3);
+  color: var(--white);
+}
+.email-input::placeholder { color: rgba(255,255,255,0.5); }
+.email-input:focus { border-color: rgba(255,255,255,0.7); }
+.email-legal {
+  font-size: 0.8125rem;
+  color: rgba(255,255,255,0.45);
+  margin-top: 8px;
+}
+</style>

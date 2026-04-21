@@ -1,0 +1,132 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import RestaurantCard from '../../components/RestaurantCard.astro';
+import EmailCapture from '../../components/EmailCapture.astro';
+import { restaurants, getAreaStats } from '../../data/restaurants';
+
+export async function getStaticPaths() {
+  const areaStats = getAreaStats();
+  return Object.keys(areaStats).map(areaSlug => ({ params: { city: areaSlug } }));
+}
+
+const { city } = Astro.params as { city: string };
+const areaStats = getAreaStats();
+const stat = areaStats[city];
+
+if (!stat) {
+  return Astro.redirect('/regions');
+}
+
+const areaRestaurants = restaurants.filter(r => r.areaSlug === city);
+const areaName = stat.name;
+const cityName = stat.citySlug === 'london' ? 'London' : areaName;
+const parentCitySlug = stat.citySlug;
+
+const schema = {
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://familyfriendlyuk.co.uk" },
+    { "@type": "ListItem", "position": 2, "name": "Regions", "item": "https://familyfriendlyuk.co.uk/regions" },
+    { "@type": "ListItem", "position": 3, "name": `Family Friendly Restaurants in ${areaName}`, "item": `https://familyfriendlyuk.co.uk/area/${city}` }
+  ]
+};
+---
+
+<BaseLayout
+  title={`Family Friendly Restaurants in ${areaName}, ${cityName} | Family Friendly UK`}
+  description={`The best family-friendly restaurants in ${areaName}, ${cityName}. Highchairs, kids menus, outdoor space — all the things that matter to parents. ${areaRestaurants.length} restaurants reviewed.`}
+  schema={schema}
+>
+  <div class="page-hero">
+    <div class="container">
+      <nav class="breadcrumb" aria-label="Breadcrumb">
+        <a href="/">Home</a>
+        <span class="sep" aria-hidden="true">›</span>
+        <a href="/regions">Regions</a>
+        <span class="sep" aria-hidden="true">›</span>
+        <span aria-current="page">{areaName}</span>
+      </nav>
+      <h1>Family friendly restaurants in {areaName}</h1>
+      <p>
+        {areaRestaurants.length} reviewed restaurant{areaRestaurants.length !== 1 ? 's' : ''} across {areaName}.
+        Every listing is checked for the things that actually matter: highchairs, kids menus, outdoor space, and a genuine welcome for families.
+      </p>
+    </div>
+  </div>
+
+  <section>
+    <div class="container">
+      {areaRestaurants.length > 0 ? (
+        <>
+          <div class="area-intro">
+            <p>
+              Showing all {areaRestaurants.length} family-friendly restaurants in <strong>{areaName}</strong>.
+              Use the filters on the <a href="/">interactive map</a> to narrow down by what matters to you.
+            </p>
+          </div>
+
+          <div class="grid-3 listings-grid">
+            {areaRestaurants.map(r => (
+              <RestaurantCard restaurant={r} />
+            ))}
+          </div>
+        </>
+      ) : (
+        <div class="empty-state">
+          <p>We don't have any listings for {areaName} yet.</p>
+          <p>Be the first to suggest a great family restaurant here.</p>
+          <a href="/suggest" class="btn btn-terracotta" style="margin-top:16px">Suggest a restaurant</a>
+        </div>
+      )}
+
+      {areaRestaurants.length < 3 && (
+        <div class="suggest-nudge">
+          <h3>Know a great family restaurant in {areaName}?</h3>
+          <p>We're building this area — help us make it better for families near you.</p>
+          <a href="/suggest" class="btn btn-terracotta">Suggest a restaurant →</a>
+        </div>
+      )}
+
+      <div class="area-email" style="margin-top:48px">
+        <EmailCapture
+          headline={`Get our guide to family restaurants in ${areaName} and beyond`}
+          subline="Download our free PDF guide to the best family restaurants we've reviewed — honest verdicts on every single one."
+        />
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+.area-intro {
+  padding: 16px 20px;
+  background: var(--green-pale);
+  border-radius: var(--radius-sm);
+  font-size: 0.9375rem;
+  color: var(--text-muted);
+  margin-bottom: 32px;
+}
+.area-intro strong { color: var(--green); }
+.area-intro a { color: var(--green); text-decoration: underline; }
+.listings-grid { margin-bottom: 48px; }
+.empty-state {
+  text-align: center;
+  padding: 64px 24px;
+  color: var(--text-muted);
+}
+.suggest-nudge {
+  background: var(--terracotta-pale);
+  border: 1.5px solid var(--terracotta);
+  border-radius: var(--radius);
+  padding: 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-width: 600px;
+  margin: 0 auto 40px;
+  text-align: center;
+}
+.suggest-nudge h3 { font-family: var(--font-serif); color: var(--terracotta); }
+.suggest-nudge p { color: var(--text-muted); }
+</style>

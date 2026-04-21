@@ -1,0 +1,128 @@
+---
+const year = new Date().getFullYear();
+---
+<footer class="site-footer">
+  <div class="container footer-inner">
+    <div class="footer-brand">
+      <a href="/" class="footer-logo">
+        <span>🌿</span>
+        <div>
+          <div class="footer-logo-main">Family Friendly UK</div>
+          <div class="footer-logo-sub">Family restaurants across Britain</div>
+        </div>
+      </a>
+      <p class="footer-strapline">
+        A knowledgeable guide to the best family restaurants across the UK — from London to Edinburgh, Bristol to Newcastle.
+      </p>
+    </div>
+
+    <div class="footer-links">
+      <div class="footer-col">
+        <h4>Discover</h4>
+        <ul>
+          <li><a href="/">Find restaurants</a></li>
+          <li><a href="/regions">Browse by region</a></li>
+          <li><a href="/area/london">London</a></li>
+          <li><a href="/area/clapham">Clapham</a></li>
+          <li><a href="/area/islington">Islington</a></li>
+          <li><a href="/area/richmond">Richmond</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>More areas</h4>
+        <ul>
+          <li><a href="/area/notting-hill">Notting Hill</a></li>
+          <li><a href="/area/shoreditch">Shoreditch</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Family Friendly UK</h4>
+        <ul>
+          <li><a href="/suggest">Suggest a place</a></li>
+          <li><a href="/get-featured">Get featured</a></li>
+          <li><a href="/regions">All regions</a></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer-bottom">
+    <div class="container footer-bottom-inner">
+      <p>&copy; {year} Family Friendly UK. A guide for parents, by parents.</p>
+      <p>Listings are for informational purposes. Always check with restaurants directly for current details.</p>
+    </div>
+  </div>
+</footer>
+
+<style>
+.site-footer {
+  background: var(--green);
+  color: rgba(255,255,255,0.85);
+  margin-top: 80px;
+}
+.footer-inner {
+  display: grid;
+  grid-template-columns: 1.5fr 2fr;
+  gap: 48px;
+  padding: 56px 24px 48px;
+}
+@media (max-width: 700px) {
+  .footer-inner { grid-template-columns: 1fr; gap: 32px; }
+}
+.footer-brand { display: flex; flex-direction: column; gap: 16px; }
+.footer-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 1.25rem;
+}
+.footer-logo-main {
+  font-family: var(--font-serif);
+  font-size: 1.1rem;
+  color: var(--white);
+}
+.footer-logo-sub { font-size: 0.6875rem; color: rgba(255,255,255,0.6); }
+.footer-strapline {
+  font-size: 0.9375rem;
+  color: rgba(255,255,255,0.65);
+  line-height: 1.65;
+  max-width: 300px;
+}
+.footer-links {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+}
+@media (max-width: 500px) {
+  .footer-links { grid-template-columns: repeat(2, 1fr); }
+}
+.footer-col h4 {
+  font-family: var(--font-serif);
+  font-size: 1rem;
+  color: var(--white);
+  margin-bottom: 14px;
+  font-weight: normal;
+}
+.footer-col ul { display: flex; flex-direction: column; gap: 8px; }
+.footer-col a {
+  font-size: 0.9rem;
+  color: rgba(255,255,255,0.65);
+  transition: color 0.15s;
+}
+.footer-col a:hover { color: var(--white); }
+.footer-bottom {
+  border-top: 1px solid rgba(255,255,255,0.15);
+}
+.footer-bottom-inner {
+  display: flex;
+  gap: 32px;
+  flex-wrap: wrap;
+  padding: 20px 24px;
+  font-size: 0.8125rem;
+  color: rgba(255,255,255,0.45);
+  justify-content: space-between;
+}
+@media (max-width: 600px) {
+  .footer-bottom-inner { flex-direction: column; gap: 8px; }
+}
+</style>

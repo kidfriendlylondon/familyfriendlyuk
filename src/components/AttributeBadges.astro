@@ -1,0 +1,75 @@
+---
+import type { Restaurant } from '../data/restaurants';
+interface Props {
+  restaurant: Restaurant;
+  compact?: boolean;
+}
+const { restaurant: r, compact = false } = Astro.props;
+
+const attrs = [
+  { show: r.kidsMenu === 'yes', label: 'Kids menu', icon: '🍽️' },
+  { show: r.highchairs === 'yes', label: 'Highchairs', icon: '🪑' },
+  { show: r.outdoorSpace === 'yes', label: 'Outdoor space', icon: '🌿' },
+  { show: r.babyChanging === 'yes', label: 'Baby changing', icon: '👶' },
+  { show: r.buggyAccessible === 'yes', label: 'Buggy friendly', icon: '🛻' },
+  { show: r.softPlay === 'yes', label: 'Soft play', icon: '🎪' },
+  { show: r.veganOptions === 'yes', label: 'Vegan options', icon: '🥦' },
+  { show: r.glutenFreeOptions === 'yes', label: 'Gluten free', icon: '🌾' },
+  { show: r.halalOptions === 'yes', label: 'Halal', icon: '🌙' },
+].filter(a => a.show);
+
+const likely = [
+  { show: r.kidsMenu === 'likely', label: 'Kids menu (likely)', icon: '🍽️' },
+  { show: r.highchairs === 'likely', label: 'Highchairs (likely)', icon: '🪑' },
+  { show: r.buggyAccessible === 'likely', label: 'Buggy (likely)', icon: '🛻' },
+  { show: r.veganOptions === 'likely', label: 'Vegan (likely)', icon: '🥦' },
+].filter(a => a.show);
+
+const noiseLabelMap: Record<string, string> = {
+  quiet: 'Quiet atmosphere',
+  moderate: 'Relaxed atmosphere',
+  lively: 'Lively atmosphere',
+};
+const ageLabel = r.bestForAgeRange.includes('all ages')
+  ? 'Great for all ages'
+  : 'Best for: ' + r.bestForAgeRange.join(', ');
+---
+
+<div class:list={['badges', { 'badges--compact': compact }]}>
+  {attrs.map(a => (
+    <span class="badge badge-green">
+      <span aria-hidden="true">{a.icon}</span>
+      {a.label}
+    </span>
+  ))}
+  {!compact && likely.map(a => (
+    <span class="badge badge-cream">
+      <span aria-hidden="true">{a.icon}</span>
+      {a.label}
+    </span>
+  ))}
+  <span class="badge badge-cream">
+    🔊 {noiseLabelMap[r.noiseLevel]}
+  </span>
+  <span class="badge badge-cream">
+    👨‍👩‍👧 {ageLabel}
+  </span>
+  {r.bookingRequired === 'yes' && (
+    <span class="badge badge-terracotta">Booking required</span>
+  )}
+  {r.bookingRequired === 'recommended' && (
+    <span class="badge badge-cream">Booking recommended</span>
+  )}
+</div>
+
+<style>
+.badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.badges--compact .badge {
+  font-size: 0.75rem;
+  padding: 3px 8px;
+}
+</style>

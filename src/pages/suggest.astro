@@ -1,0 +1,190 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+
+<BaseLayout
+  title="Suggest a Family-Friendly Restaurant | Family Friendly UK"
+  description="Know a great family-friendly restaurant that should be on Family Friendly UK? Tell us about it and we'll add it to our guide."
+>
+  <div class="page-hero">
+    <div class="container">
+      <nav class="breadcrumb">
+        <a href="/">Home</a>
+        <span class="sep">›</span>
+        <span aria-current="page">Suggest a restaurant</span>
+      </nav>
+      <h1>Suggest a restaurant</h1>
+      <p>Know a brilliant family-friendly restaurant that should be on our radar? We review every suggestion personally and add the best ones to the guide.</p>
+    </div>
+  </div>
+
+  <section>
+    <div class="container suggest-layout">
+      <div class="suggest-form-wrap">
+        <div class="card" style="padding:40px">
+          <h2>Tell us about it</h2>
+          <p class="form-intro">Fill in as much as you know. We do our own research too — every suggestion is reviewed by the team before it goes live.</p>
+
+          <form
+            action="https://formspree.io/f/xeojgvdl"
+            method="POST"
+            class="suggest-form"
+          >
+            <input type="hidden" name="form-type" value="suggest-restaurant" />
+
+            <div class="form-row-2">
+              <div class="form-group">
+                <label class="form-label" for="restaurant-name">Restaurant name *</label>
+                <input id="restaurant-name" type="text" name="restaurant-name" required class="form-input" placeholder="e.g. The White Hart" />
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="area">Area / city *</label>
+                <input id="area" type="text" name="area" required class="form-input" placeholder="e.g. Edinburgh, Manchester" />
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="address">Address</label>
+              <input id="address" type="text" name="address" class="form-input" placeholder="Full street address" />
+            </div>
+
+            <div class="form-row-2">
+              <div class="form-group">
+                <label class="form-label" for="cuisine">Cuisine type</label>
+                <input id="cuisine" type="text" name="cuisine" class="form-input" placeholder="e.g. Italian, Gastropub" />
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="website">Website</label>
+                <input id="website" type="url" name="website" class="form-input" placeholder="https://..." />
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Family-friendly features you've noticed</label>
+              <div class="check-grid">
+                {[
+                  ['kids-menu', 'Kids menu'],
+                  ['highchairs', 'Highchairs'],
+                  ['outdoor-space', 'Outdoor space'],
+                  ['baby-changing', 'Baby changing'],
+                  ['buggy-friendly', 'Buggy friendly'],
+                  ['soft-play', 'Soft play'],
+                  ['vegan', 'Vegan options'],
+                  ['halal', 'Halal'],
+                ].map(([val, label]) => (
+                  <label class="check-label">
+                    <input type="checkbox" name="features" value={val} />
+                    {label}
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="why">Why do families love it? *</label>
+              <textarea
+                id="why"
+                name="why"
+                required
+                class="form-textarea"
+                rows={5}
+                placeholder="Tell us what makes it special for families — kids menu details, how welcoming the staff are, great outdoor space, whatever you loved about it..."
+              ></textarea>
+            </div>
+
+            <div class="form-row-2">
+              <div class="form-group">
+                <label class="form-label" for="your-name">Your name</label>
+                <input id="your-name" type="text" name="your-name" class="form-input" placeholder="Optional" />
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="your-email">Your email</label>
+                <input id="your-email" type="email" name="your-email" class="form-input" placeholder="So we can credit you" />
+              </div>
+            </div>
+
+            <button type="submit" class="btn btn-terracotta btn-lg" style="margin-top:8px">
+              Submit suggestion →
+            </button>
+            <p class="form-legal">We review every submission personally. Most suggestions get a response within a week.</p>
+          </form>
+        </div>
+      </div>
+
+      <aside class="suggest-aside">
+        <div class="aside-card card" style="padding:28px">
+          <h3>What we look for</h3>
+          <ul class="criteria-list">
+            {[
+              'Genuinely welcoming to families with young children',
+              'Reliable highchairs or family seating available',
+              'A kids menu that isn\'t just fish fingers',
+              'Staff who don\'t make parents feel rushed or unwelcome',
+              'Good quality food that adults want to eat too',
+            ].map(c => <li>{c}</li>)}
+          </ul>
+        </div>
+
+        <div class="aside-card card" style="padding:28px">
+          <h3>Already listed?</h3>
+          <p>If you're a restaurant owner wanting to update your existing listing, or claim it for free, select "update listing" below.</p>
+          <a href="/suggest?type=update" class="btn btn-secondary btn-sm" style="margin-top:14px">Update a listing</a>
+        </div>
+
+        <div class="aside-card card" style="padding:28px">
+          <h3>Get featured</h3>
+          <p>Featured listings are highlighted across the site — on the map, in search results, and in our email guide.</p>
+          <a href="/get-featured" class="btn btn-terracotta btn-sm" style="margin-top:14px">Get featured for £29/month →</a>
+        </div>
+      </aside>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+.suggest-layout {
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  gap: 40px;
+  align-items: start;
+}
+@media (max-width: 860px) {
+  .suggest-layout { grid-template-columns: 1fr; }
+  .suggest-aside { order: -1; }
+}
+.form-intro { color: var(--text-muted); margin-bottom: 28px; font-size: 1.0625rem; line-height: 1.7; }
+.suggest-form { display: flex; flex-direction: column; gap: 20px; }
+.form-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+@media (max-width: 560px) { .form-row-2 { grid-template-columns: 1fr; } }
+.check-grid { display: flex; flex-wrap: wrap; gap: 8px; }
+.check-label {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 7px 14px;
+  border: 1.5px solid var(--border);
+  border-radius: 20px;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.check-label:hover { border-color: var(--green); background: var(--green-pale); }
+.check-label input { accent-color: var(--green); }
+.form-legal { font-size: 0.8125rem; color: var(--text-light); margin-top: 8px; }
+.suggest-aside { display: flex; flex-direction: column; gap: 20px; position: sticky; top: 80px; }
+.aside-card h3 { font-family: var(--font-serif); font-size: 1.1rem; margin-bottom: 12px; }
+.aside-card p { font-size: 0.9375rem; color: var(--text-muted); line-height: 1.65; }
+.criteria-list { display: flex; flex-direction: column; gap: 8px; }
+.criteria-list li {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  padding-left: 20px;
+  position: relative;
+  line-height: 1.5;
+}
+.criteria-list li::before {
+  content: '✓';
+  position: absolute;
+  left: 0;
+  color: var(--green);
+  font-weight: 600;
+}
+</style>

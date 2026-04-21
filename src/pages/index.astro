@@ -1,0 +1,291 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Map from '../components/Map.tsx';
+import FeaturedCarousel from '../components/FeaturedCarousel.tsx';
+import EmailCapture from '../components/EmailCapture.astro';
+import RestaurantCard from '../components/RestaurantCard.astro';
+import { restaurants, getFeaturedRestaurants, getAreaStats } from '../data/restaurants';
+
+const featured = getFeaturedRestaurants();
+const areaStats = getAreaStats();
+const areas = Object.entries(areaStats).sort((a, b) => b[1].count - a[1].count);
+
+const mapRestaurants = restaurants.map(r => ({
+  id: r.id,
+  slug: r.slug,
+  name: r.name,
+  area: r.area,
+  city: r.city,
+  cuisineType: r.cuisineType,
+  priceRange: r.priceRange,
+  googleRating: r.googleRating,
+  lat: r.lat,
+  lng: r.lng,
+  kidsMenu: r.kidsMenu,
+  highchairs: r.highchairs,
+  outdoorSpace: r.outdoorSpace,
+  buggyAccessible: r.buggyAccessible,
+  noiseLevel: r.noiseLevel,
+  bestForAgeRange: r.bestForAgeRange,
+  veganOptions: r.veganOptions,
+  glutenFreeOptions: r.glutenFreeOptions,
+  halalOptions: r.halalOptions,
+  featured: r.featured,
+  shortDescription: r.shortDescription,
+}));
+
+const schema = {
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "name": "Family Friendly UK",
+  "url": "https://familyfriendlyuk.co.uk",
+  "description": "A directory of family-friendly restaurants across the UK, searchable on an interactive map.",
+  "potentialAction": {
+    "@type": "SearchAction",
+    "target": "https://familyfriendlyuk.co.uk/?search={search_term_string}",
+    "query-input": "required name=search_term_string"
+  }
+};
+---
+
+<BaseLayout
+  title="Family Friendly Restaurants UK | Find Kid-Friendly Places to Eat Near You"
+  description="The UK's best guide to family-friendly restaurants — find great places to eat with children near you, across the whole country. Highchairs, kids menus, outdoor space and more."
+  schema={schema}
+>
+  <!-- Hero -->
+  <section class="hero">
+    <div class="container">
+      <div class="hero-text">
+        <h1>Great restaurants for families, <em>across the whole UK</em></h1>
+        <p class="hero-sub">
+          Find family-friendly restaurants near you — from London to Edinburgh, Bristol to Newcastle.
+          Filter by highchairs, kids menus, outdoor space, and more.
+        </p>
+      </div>
+
+      <div class="hero-map">
+        <Map restaurants={mapRestaurants} client:load />
+      </div>
+
+      <div class="hero-email">
+        <EmailCapture variant="hero" />
+      </div>
+    </div>
+  </section>
+
+  <!-- Featured restaurants -->
+  <section class="featured-section">
+    <div class="container">
+      <div class="section-header">
+        <h2>Great places to try right now</h2>
+        <p>Restaurants we've genuinely loved and think every UK family should know about.</p>
+      </div>
+      <FeaturedCarousel restaurants={featured} client:load />
+      <div style="text-align:center;margin-top:36px">
+        <a href="/regions" class="btn btn-secondary btn-lg">
+          Browse all regions
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Areas -->
+  <section class="areas-section">
+    <div class="container">
+      <div class="section-header">
+        <h2>Explore by area</h2>
+        <p>We've started with London's best family neighbourhoods — more UK cities coming soon.</p>
+      </div>
+      <div class="areas-grid">
+        {areas.map(([slug, stat]) => (
+          <a href={`/area/${slug}`} class="area-card">
+            <div class="area-card-inner">
+              <div class="area-icon" aria-hidden="true">🗺️</div>
+              <div>
+                <h3>{stat.name}</h3>
+                <p>{stat.count} restaurant{stat.count !== 1 ? 's' : ''}</p>
+              </div>
+            </div>
+            <span class="area-arrow">→</span>
+          </a>
+        ))}
+        <div class="area-card area-card--coming-soon">
+          <div class="area-card-inner">
+            <div class="area-icon" aria-hidden="true">🏙️</div>
+            <div>
+              <h3>Manchester</h3>
+              <p>Coming soon</p>
+            </div>
+          </div>
+        </div>
+        <div class="area-card area-card--coming-soon">
+          <div class="area-card-inner">
+            <div class="area-icon" aria-hidden="true">🌊</div>
+            <div>
+              <h3>Edinburgh</h3>
+              <p>Coming soon</p>
+            </div>
+          </div>
+        </div>
+        <div class="area-card area-card--coming-soon">
+          <div class="area-card-inner">
+            <div class="area-icon" aria-hidden="true">🍃</div>
+            <div>
+              <h3>Bristol</h3>
+              <p>Coming soon</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Why FFUK -->
+  <section class="why-section">
+    <div class="container">
+      <div class="why-inner">
+        <div class="why-text">
+          <h2>Not just child-tolerant. <em>Actually family-friendly.</em></h2>
+          <p>
+            There's a difference between a restaurant that tolerates children and one that genuinely makes your whole family feel welcome. We know — we've been to both kinds.
+          </p>
+          <p>
+            Every listing on Family Friendly UK tells you the things that actually matter as a parent: do they have highchairs? Is there outdoor space for buggies? Will the kids menu embarrass you? Is it quiet enough for a sleeping baby or buzzy enough that a toddler meltdown blends in?
+          </p>
+          <p>
+            We cover the whole UK, with London as our most detailed region. We're building this for parents who love good food and want their children to love it too.
+          </p>
+          <a href="/suggest" class="btn btn-secondary" style="margin-top:8px">
+            Know a great place? Tell us →
+          </a>
+        </div>
+        <div class="why-stats">
+          <div class="stat">
+            <div class="stat-number">{restaurants.length}+</div>
+            <div class="stat-label">Restaurants reviewed</div>
+          </div>
+          <div class="stat">
+            <div class="stat-number">{areas.length}</div>
+            <div class="stat-label">Areas covered</div>
+          </div>
+          <div class="stat">
+            <div class="stat-number">12</div>
+            <div class="stat-label">Family attributes checked</div>
+          </div>
+          <div class="stat">
+            <div class="stat-number">Free</div>
+            <div class="stat-label">Always free for parents</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Email capture -->
+  <section style="padding:0 0 64px">
+    <div class="container">
+      <EmailCapture />
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+/* Hero */
+.hero {
+  background: var(--green);
+  padding: 56px 0 0;
+  color: white;
+}
+.hero .container { display: flex; flex-direction: column; gap: 32px; }
+.hero-text { max-width: 680px; }
+.hero-text h1 {
+  color: white;
+  margin-bottom: 16px;
+  font-size: clamp(2rem, 5vw, 3.25rem);
+}
+.hero-text h1 em {
+  font-style: normal;
+  color: #b5d68a;
+}
+.hero-sub {
+  color: rgba(255,255,255,0.82);
+  font-size: 1.125rem;
+  line-height: 1.7;
+  max-width: 580px;
+}
+.hero-map {
+  background: var(--cream);
+  border-radius: 16px 16px 0 0;
+  padding: 24px;
+  margin: 0 -24px;
+}
+@media (min-width: 600px) { .hero-map { margin: 0; border-radius: 16px; } }
+.hero-email {
+  padding: 32px 0 56px;
+}
+
+/* Featured */
+.featured-section { background: var(--cream); }
+
+/* Areas */
+.areas-section { background: var(--white); }
+.areas-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 16px;
+}
+.area-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px;
+  background: var(--white);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius);
+  transition: all 0.2s;
+}
+.area-card:not(.area-card--coming-soon):hover {
+  border-color: var(--green);
+  background: var(--green-pale);
+  transform: translateY(-2px);
+}
+.area-card--coming-soon { opacity: 0.5; cursor: default; }
+.area-card-inner { display: flex; gap: 14px; align-items: center; }
+.area-icon { font-size: 1.5rem; }
+.area-card h3 { font-family: var(--font-serif); font-size: 1.05rem; margin-bottom: 2px; }
+.area-card p { font-size: 0.875rem; color: var(--text-muted); }
+.area-arrow { font-size: 1rem; color: var(--green); }
+
+/* Why section */
+.why-section { background: var(--cream); }
+.why-inner {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 64px;
+  align-items: start;
+}
+@media (max-width: 760px) { .why-inner { grid-template-columns: 1fr; gap: 40px; } }
+.why-text { display: flex; flex-direction: column; gap: 18px; }
+.why-text h2 em { font-style: italic; color: var(--terracotta); }
+.why-text p { color: var(--text-muted); font-size: 1.05rem; line-height: 1.75; }
+.why-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+.stat {
+  background: var(--white);
+  padding: 28px 24px;
+  border-radius: var(--radius);
+  box-shadow: var(--card-shadow);
+}
+.stat-number {
+  font-family: var(--font-serif);
+  font-size: 2.5rem;
+  color: var(--green);
+  line-height: 1;
+  margin-bottom: 8px;
+}
+.stat-label { font-size: 0.9rem; color: var(--text-muted); }
+</style>

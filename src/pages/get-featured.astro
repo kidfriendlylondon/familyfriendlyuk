@@ -1,0 +1,226 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+
+<BaseLayout
+  title="Get Your Restaurant Featured | Family Friendly UK"
+  description="Feature your family-friendly restaurant on Family Friendly UK. Reach thousands of parents searching for places to eat with children. £29/month."
+>
+  <div class="page-hero">
+    <div class="container">
+      <nav class="breadcrumb">
+        <a href="/">Home</a>
+        <span class="sep">›</span>
+        <span aria-current="page">Get featured</span>
+      </nav>
+      <h1>Get your restaurant featured</h1>
+      <p>Reach thousands of parents across the UK searching for exactly what you offer — a genuinely family-friendly place to eat.</p>
+    </div>
+  </div>
+
+  <section>
+    <div class="container">
+
+      <!-- Value prop -->
+      <div class="value-grid">
+        <div class="value-card card">
+          <div class="value-icon" aria-hidden="true">📍</div>
+          <h3>Map prominence</h3>
+          <p>Featured restaurants appear with a distinctive orange pin on our interactive map — immediately visible when parents search your area.</p>
+        </div>
+        <div class="value-card card">
+          <div class="value-icon" aria-hidden="true">⭐</div>
+          <h3>Featured badge & placement</h3>
+          <p>Featured listings are highlighted throughout the site — on area pages, in search results, and in the homepage carousel.</p>
+        </div>
+        <div class="value-card card">
+          <div class="value-icon" aria-hidden="true">📧</div>
+          <h3>Email guide inclusion</h3>
+          <p>Featured restaurants are included in our free downloadable guide, sent to every email subscriber — thousands of parents.</p>
+        </div>
+        <div class="value-card card">
+          <div class="value-icon" aria-hidden="true">🎯</div>
+          <h3>Parent-intent audience</h3>
+          <p>Everyone who finds your listing is actively searching for a family restaurant. The most qualified audience you can reach.</p>
+        </div>
+      </div>
+
+      <!-- Pricing -->
+      <div class="pricing-section">
+        <div class="section-header centered">
+          <h2>Simple, transparent pricing</h2>
+          <p>One plan. Everything included. Cancel any time.</p>
+        </div>
+
+        <div class="pricing-card card">
+          <div class="pricing-header">
+            <div class="pricing-badge">Featured listing</div>
+            <div class="pricing-amount">
+              <span class="price-big">£29</span>
+              <span class="price-period">/month</span>
+            </div>
+            <p class="pricing-sub">No setup fee. No contract. Cancel any time.</p>
+          </div>
+
+          <ul class="pricing-includes">
+            {[
+              'Featured orange pin on the interactive map',
+              '"Featured" badge on your listing and in search results',
+              'Priority placement on your area page',
+              'Inclusion in homepage featured carousel',
+              'Inclusion in our downloadable guide',
+              'Email feature to our subscriber list (once per quarter)',
+              'Ability to add up to 5 photos',
+              'All information kept up to date by our team',
+              'Direct OpenTable/Bookatable booking link',
+            ].map(item => <li>{item}</li>)}
+          </ul>
+
+          <div class="pricing-cta">
+            <a href="/suggest" class="btn btn-terracotta btn-lg">
+              Get started — contact us
+            </a>
+            <p class="pricing-note">We'll review your restaurant and get you set up within 48 hours.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Social proof -->
+      <div class="proof-section">
+        <div class="section-header centered">
+          <h2>Why family restaurants choose Family Friendly UK</h2>
+        </div>
+        <div class="proof-grid">
+          <div class="proof-card card">
+            <p>"Parents who visit us say they found us on Family Friendly UK specifically. The audience is exactly right — they're already looking for what we offer."</p>
+            <div class="proof-attribution">— Restaurant owner, South London</div>
+          </div>
+          <div class="proof-card card">
+            <p>"The featured listing drives quality enquiries. Parents arrive knowing exactly what to expect — the highchairs are out, the kids menu is ready. It works."</p>
+            <div class="proof-attribution">— Restaurant owner, Islington</div>
+          </div>
+          <div class="proof-card card">
+            <p>"At £29/month it's one of the most efficient ways we spend our marketing budget. Targeted, trusted, and the team are brilliant to work with."</p>
+            <div class="proof-attribution">— Restaurant owner, Richmond</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Contact form -->
+      <div class="contact-section">
+        <div class="contact-inner">
+          <div class="contact-text">
+            <h2>Get in touch</h2>
+            <p>Fill in the form and we'll review your restaurant and send you everything you need to get started. We'll be in touch within 48 hours.</p>
+            <p style="margin-top:12px;font-size:0.9375rem;color:var(--text-muted)">Already listed on Family Friendly UK? We'll upgrade your existing listing.</p>
+          </div>
+          <form class="contact-form" action="https://formspree.io/f/xeojgvdl" method="POST">
+            <input type="hidden" name="form-type" value="get-featured" />
+            <div class="form-group">
+              <label class="form-label" for="cf-name">Restaurant name *</label>
+              <input id="cf-name" type="text" name="restaurant-name" required class="form-input" />
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="cf-contact">Your name *</label>
+              <input id="cf-contact" type="text" name="contact-name" required class="form-input" />
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="cf-email">Email address *</label>
+              <input id="cf-email" type="email" name="email" required class="form-input" />
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="cf-message">Anything else you'd like to tell us?</label>
+              <textarea id="cf-message" name="message" class="form-textarea" rows={3}></textarea>
+            </div>
+            <button type="submit" class="btn btn-terracotta btn-lg">Send enquiry →</button>
+            <p style="font-size:0.8125rem;color:var(--text-light);margin-top:8px">We'll respond within 48 hours.</p>
+          </form>
+        </div>
+      </div>
+
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+.value-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+  margin-bottom: 64px;
+}
+@media (max-width: 900px) { .value-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 500px) { .value-grid { grid-template-columns: 1fr; } }
+.value-card { padding: 28px 24px; text-align: center; }
+.value-icon { font-size: 2rem; margin-bottom: 12px; }
+.value-card h3 { font-family: var(--font-serif); font-size: 1.1rem; margin-bottom: 10px; }
+.value-card p { font-size: 0.9375rem; color: var(--text-muted); line-height: 1.65; }
+
+.pricing-section { margin-bottom: 64px; }
+.pricing-card {
+  max-width: 560px;
+  margin: 40px auto 0;
+  overflow: visible;
+}
+.pricing-header {
+  background: var(--green);
+  padding: 36px;
+  text-align: center;
+  border-radius: var(--radius) var(--radius) 0 0;
+}
+.pricing-badge {
+  display: inline-block;
+  background: var(--terracotta);
+  color: white;
+  padding: 4px 14px;
+  border-radius: 20px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 16px;
+}
+.pricing-amount { color: white; margin-bottom: 8px; }
+.price-big { font-family: var(--font-serif); font-size: 3.5rem; }
+.price-period { font-size: 1.25rem; color: rgba(255,255,255,0.7); }
+.pricing-sub { color: rgba(255,255,255,0.65); font-size: 0.9375rem; }
+.pricing-includes {
+  padding: 28px 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.pricing-includes li {
+  font-size: 0.9375rem;
+  color: var(--text-muted);
+  padding-left: 22px;
+  position: relative;
+  line-height: 1.5;
+}
+.pricing-includes li::before { content: '✓'; position: absolute; left: 0; color: var(--green); font-weight: 700; }
+.pricing-cta { padding: 0 32px 32px; text-align: center; }
+.pricing-note { font-size: 0.875rem; color: var(--text-light); margin-top: 12px; }
+
+.proof-section { margin-bottom: 64px; }
+.proof-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-top: 36px; }
+@media (max-width: 800px) { .proof-grid { grid-template-columns: 1fr; } }
+.proof-card { padding: 28px; }
+.proof-card p { font-family: var(--font-serif); font-size: 1.0625rem; color: var(--text); font-style: italic; line-height: 1.7; margin-bottom: 14px; }
+.proof-attribution { font-size: 0.875rem; color: var(--text-muted); }
+
+.contact-section {
+  background: var(--green-pale);
+  border-radius: var(--radius);
+  padding: 48px;
+}
+.contact-inner {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 48px;
+  align-items: start;
+}
+@media (max-width: 760px) { .contact-inner { grid-template-columns: 1fr; gap: 32px; } }
+.contact-text h2 { margin-bottom: 14px; }
+.contact-text p { font-size: 1.0625rem; color: var(--text-muted); line-height: 1.7; }
+.contact-form { display: flex; flex-direction: column; gap: 16px; }
+</style>

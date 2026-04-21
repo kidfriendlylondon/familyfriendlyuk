@@ -1,0 +1,41 @@
+---
+interface Props {
+  title: string;
+  description: string;
+  canonical?: string;
+  ogImage?: string;
+  type?: 'website' | 'article';
+  schema?: object;
+}
+const {
+  title,
+  description,
+  canonical,
+  ogImage = '/og-default.jpg',
+  type = 'website',
+  schema,
+} = Astro.props;
+const canonicalURL = canonical ?? Astro.url.href;
+---
+<title>{title}</title>
+<meta name="description" content={description} />
+<link rel="canonical" href={canonicalURL} />
+
+<!-- Open Graph -->
+<meta property="og:type" content={type} />
+<meta property="og:title" content={title} />
+<meta property="og:description" content={description} />
+<meta property="og:url" content={canonicalURL} />
+<meta property="og:image" content={new URL(ogImage, Astro.site)} />
+<meta property="og:site_name" content="Family Friendly UK" />
+
+<!-- Twitter -->
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content={title} />
+<meta name="twitter:description" content={description} />
+<meta name="twitter:image" content={new URL(ogImage, Astro.site)} />
+
+<!-- Structured data -->
+{schema && (
+  <script type="application/ld+json" set:html={JSON.stringify(schema)} />
+)}

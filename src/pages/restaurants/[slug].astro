@@ -1,0 +1,448 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import AttributeBadges from '../../components/AttributeBadges.astro';
+import RestaurantCard from '../../components/RestaurantCard.astro';
+import EmailCapture from '../../components/EmailCapture.astro';
+import { restaurants, getNearby } from '../../data/restaurants';
+
+export async function getStaticPaths() {
+  return restaurants.map(r => ({ params: { slug: r.slug } }));
+}
+
+const { slug } = Astro.params as { slug: string };
+const r = restaurants.find(x => x.slug === slug);
+
+if (!r) return Astro.redirect('/regions');
+
+const nearby = getNearby(r.lat, r.lng, 3, r.slug);
+const days = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
+const priceMap: Record<string, string> = { '£': '£ Budget-friendly', '££': '££ Mid-range', '$$$': '£££ Special occasion' };
+
+const schema = {
+  "@context": "https://schema.org",
+  "@type": "Restaurant",
+  "name": r.name,
+  "description": r.shortDescription,
+  "address": {
+    "@type": "PostalAddress",
+    "streetAddress": r.address,
+    "addressLocality": r.area,
+    "addressRegion": r.city,
+    "postalCode": r.postcode,
+    "addressCountry": "GB"
+  },
+  "telephone": r.phone || undefined,
+  "url": r.website || undefined,
+  "servesCuisine": r.cuisineType,
+  "priceRange": r.priceRange,
+  "aggregateRating": {
+    "@type": "AggregateRating",
+    "ratingValue": r.googleRating,
+    "reviewCount": r.reviewCount,
+    "bestRating": 5,
+    "worstRating": 1
+  },
+  "geo": { "@type": "GeoCoordinates", "latitude": r.lat, "longitude": r.lng },
+  "openingHoursSpecification": days
+    .filter(d => r.openingHours[d] && r.openingHours[d] !== 'Closed')
+    .map(d => ({
+      "@type": "OpeningHoursSpecification",
+      "dayOfWeek": `https://schema.org/${d}`,
+      "opens": r.openingHours[d]?.split('–')[0] || '',
+      "closes": r.openingHours[d]?.split('–')[1] || ''
+    })),
+  "amenityFeature": [
+    r.kidsMenu === 'yes' && { "@type": "LocationFeatureSpecification", "name": "Kids Menu", "value": true },
+    r.highchairs === 'yes' && { "@type": "LocationFeatureSpecification", "name": "High Chair", "value": true },
+    r.outdoorSpace === 'yes' && { "@type": "LocationFeatureSpecification", "name": "Outdoor Seating", "value": true },
+    r.babyChanging === 'yes' && { "@type": "LocationFeatureSpecification", "name": "Baby Changing Facilities", "value": true },
+    r.buggyAccessible === 'yes' && { "@type": "LocationFeatureSpecification", "name": "Wheelchair Accessible", "value": true },
+  ].filter(Boolean)
+};
+
+const breadcrumbSchema = {
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://familyfriendlyuk.co.uk" },
+    { "@type": "ListItem", "position": 2, "name": r.area, "item": `https://familyfriendlyuk.co.uk/area/${r.areaSlug}` },
+    { "@type": "ListItem", "position": 3, "name": r.name, "item": `https://familyfriendlyuk.co.uk/restaurants/${r.slug}` }
+  ]
+};
+
+const heroImage = r.photos[0];
+const stars = '★'.repeat(Math.round(r.googleRating)) + '☆'.repeat(5 - Math.round(r.googleRating));
+---
+
+<BaseLayout
+  title={`${r.name} ${r.area} — Family Friendly | Family Friendly UK`}
+  description={`${r.shortDescription} Find out about highchairs, kids menus, outdoor space and more at ${r.name} in ${r.area}, ${r.city}.`}
+  ogImage={heroImage}
+  schema={[schema, breadcrumbSchema]}
+>
+  <!-- Hero image -->
+  <div class="listing-hero">
+    {heroImage ? (
+      <img src={heroImage} alt={`${r.name} — family-friendly restaurant in ${r.area}`} class="listing-hero-img" />
+    ) : (
+      <div class="listing-hero-placeholder">
+        <span>{r.cuisineType}</span>
+      </div>
+    )}
+    <div class="listing-hero-overlay">
+      <div class="container">
+        <nav class="breadcrumb" aria-label="Breadcrumb" style="margin-bottom:12px">
+          <a href="/">Home</a>
+          <span class="sep">›</span>
+          <a href={`/area/${r.areaSlug}`}>{r.area}</a>
+          <span class="sep">›</span>
+          <span aria-current="page">{r.name}</span>
+        </nav>
+        <h1>{r.name}</h1>
+        <div class="listing-meta">
+          <span class="cuisine-tag">{r.cuisineType}</span>
+          <span class="sep-dot">·</span>
+          <span>{r.area}, {r.city}</span>
+          <span class="sep-dot">·</span>
+          <span class="stars">{stars} <span>{r.googleRating} ({r.reviewCount.toLocaleString()} reviews)</span></span>
+          <span class="sep-dot">·</span>
+          <span class="price">{priceMap[r.priceRange]}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <section>
+    <div class="container listing-body">
+      <div class="listing-main">
+
+        <!-- Key attributes -->
+        <div class="listing-badges card" style="padding:24px">
+          <h2 class="section-h2">Family friendliness at a glance</h2>
+          <AttributeBadges restaurant={r} />
+        </div>
+
+        <!-- Description -->
+        <div class="listing-desc">
+          <h2 class="section-h2">About {r.name}</h2>
+          <p>{r.description}</p>
+        </div>
+
+        <!-- Photos -->
+        {r.photos.length > 1 && (
+          <div class="listing-photos">
+            {r.photos.slice(1).map((photo, i) => (
+              <img src={photo} alt={`${r.name} — photo ${i + 2}`} loading="lazy" />
+            ))}
+          </div>
+        )}
+
+        <!-- Opening hours -->
+        <div class="listing-hours card" style="padding:24px">
+          <h2 class="section-h2">Opening hours</h2>
+          <table class="hours-table">
+            {days.map(day => (
+              <tr class:list={{ closed: r.openingHours[day] === 'Closed' }}>
+                <td class="day">{day}</td>
+                <td class:list={{ hours: true, closed: r.openingHours[day] === 'Closed' }}>
+                  {r.openingHours[day] || 'Hours not listed'}
+                </td>
+              </tr>
+            ))}
+          </table>
+          {r.bookingRequired === 'yes' && (
+            <p class="booking-note">⚠️ Booking required — contact the restaurant directly.</p>
+          )}
+          {r.bookingRequired === 'recommended' && (
+            <p class="booking-note">💡 Booking recommended, especially at weekends.</p>
+          )}
+        </div>
+
+        <!-- Map -->
+        <div class="listing-map-section">
+          <h2 class="section-h2">Location</h2>
+          <p class="listing-address">{r.address}, {r.postcode}</p>
+          <div class="listing-map" id="listing-map" data-lat={r.lat} data-lng={r.lng} data-name={r.name}></div>
+        </div>
+
+        <!-- Nearby -->
+        {nearby.length > 0 && (
+          <div class="nearby-section">
+            <h2 class="section-h2">Nearby family restaurants</h2>
+            <div class="grid-3">
+              {nearby.map(n => <RestaurantCard restaurant={n} />)}
+            </div>
+          </div>
+        )}
+
+        <EmailCapture compact headline="Get our full UK family restaurant guide — free" />
+
+      </div>
+
+      <!-- Sidebar -->
+      <aside class="listing-sidebar">
+        <div class="card sidebar-card">
+          <h3 class="sidebar-title">Visit {r.name}</h3>
+
+          <div class="sidebar-detail">
+            <span class="sidebar-label">Address</span>
+            <span>{r.address}<br />{r.postcode}</span>
+          </div>
+
+          {r.phone && (
+            <div class="sidebar-detail">
+              <span class="sidebar-label">Phone</span>
+              <a href={`tel:${r.phone}`}>{r.phone}</a>
+            </div>
+          )}
+
+          {r.website && (
+            <div class="sidebar-detail">
+              <span class="sidebar-label">Website</span>
+              <a href={r.website} target="_blank" rel="noopener noreferrer" class="external-link">
+                Visit website ↗
+              </a>
+            </div>
+          )}
+
+          <div class="sidebar-detail">
+            <span class="sidebar-label">Cuisine</span>
+            <span>{r.cuisineType}</span>
+          </div>
+
+          <div class="sidebar-detail">
+            <span class="sidebar-label">Price</span>
+            <span>{priceMap[r.priceRange]}</span>
+          </div>
+
+          <div class="sidebar-detail">
+            <span class="sidebar-label">Booking</span>
+            <span>
+              {r.bookingRequired === 'yes' && 'Required'}
+              {r.bookingRequired === 'recommended' && 'Recommended'}
+              {r.bookingRequired === 'no' && 'Walk-ins welcome'}
+            </span>
+          </div>
+
+          {r.openTableId && (
+            <a
+              href={`https://www.opentable.co.uk/restref/client/?rid=${r.openTableId}&restref=${r.openTableId}`}
+              target="_blank"
+              rel="noopener noreferrer sponsored"
+              class="btn btn-terracotta"
+              style="width:100%;justify-content:center;margin-top:8px"
+            >
+              Book a table →
+            </a>
+          )}
+        </div>
+
+        <!-- Tags -->
+        <div class="sidebar-tags">
+          {r.tags.map(tag => (
+            <span class="badge badge-cream">#{tag.replace(/-/g, ' ')}</span>
+          ))}
+        </div>
+
+        <!-- AdSense placeholder -->
+        <div class="ad-placeholder" aria-hidden="true">
+          <span>Advertisement</span>
+        </div>
+
+        <!-- Owner accordion -->
+        <details class="owner-accordion">
+          <summary>Are you the owner?</summary>
+          <div class="owner-content">
+            <p>Is information about {r.name} incorrect or out of date? We'd love to update it.</p>
+            <a href={`/suggest?type=update&name=${encodeURIComponent(r.name)}`} class="btn btn-secondary btn-sm" style="margin-top:12px">
+              Update this listing
+            </a>
+            <p style="margin-top:12px">Interested in a featured listing? <a href="/get-featured">Find out more →</a></p>
+          </div>
+        </details>
+      </aside>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+.listing-hero {
+  position: relative;
+  height: clamp(280px, 45vw, 480px);
+  overflow: hidden;
+  background: var(--green);
+}
+.listing-hero-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.listing-hero-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, var(--green) 0%, #3d6b1e 100%);
+  font-family: var(--font-serif);
+  font-size: 2rem;
+  color: rgba(255,255,255,0.5);
+}
+.listing-hero-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: linear-gradient(to top, rgba(0,0,0,0.7) 0%, transparent 100%);
+  padding: 40px 0 28px;
+}
+.listing-hero-overlay h1 { color: white; }
+.listing-hero-overlay .breadcrumb a { color: rgba(255,255,255,0.8); }
+.listing-hero-overlay .breadcrumb { color: rgba(255,255,255,0.6); }
+.listing-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  color: rgba(255,255,255,0.85);
+  font-size: 0.9375rem;
+  margin-top: 8px;
+}
+.cuisine-tag { color: #f4c06e; font-weight: 500; }
+.sep-dot { color: rgba(255,255,255,0.4); }
+.listing-meta .stars { color: #c9a227; }
+.listing-meta .stars span { color: rgba(255,255,255,0.75); }
+.listing-meta .price { color: rgba(255,255,255,0.75); }
+
+.listing-body {
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  gap: 40px;
+  align-items: start;
+  padding-top: 40px;
+  padding-bottom: 64px;
+}
+@media (max-width: 900px) {
+  .listing-body { grid-template-columns: 1fr; }
+  .listing-sidebar { order: -1; }
+}
+
+.listing-main { display: flex; flex-direction: column; gap: 40px; }
+.section-h2 {
+  font-family: var(--font-serif);
+  font-size: 1.35rem;
+  color: var(--text);
+  margin-bottom: 16px;
+}
+.listing-desc p {
+  font-size: 1.0625rem;
+  line-height: 1.8;
+  color: var(--text-muted);
+}
+.listing-photos {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+.listing-photos img {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+  border-radius: var(--radius-sm);
+}
+.hours-table { width: 100%; border-collapse: collapse; }
+.hours-table tr { border-bottom: 1px solid var(--border); }
+.hours-table tr:last-child { border-bottom: none; }
+.hours-table td { padding: 10px 8px; font-size: 0.9375rem; }
+.hours-table .day { font-weight: 500; width: 110px; }
+.hours-table .closed { color: var(--text-light); }
+.booking-note {
+  margin-top: 14px;
+  padding: 12px 16px;
+  background: var(--terracotta-pale);
+  border-radius: var(--radius-sm);
+  font-size: 0.9rem;
+  color: var(--terracotta);
+}
+.listing-address { color: var(--text-muted); margin-bottom: 12px; }
+.listing-map {
+  height: 300px;
+  border-radius: var(--radius);
+  overflow: hidden;
+  background: var(--green-pale);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+.nearby-section {}
+
+/* Sidebar */
+.listing-sidebar { display: flex; flex-direction: column; gap: 20px; position: sticky; top: 80px; }
+.sidebar-card { padding: 24px; }
+.sidebar-title { font-family: var(--font-serif); font-size: 1.2rem; margin-bottom: 18px; }
+.sidebar-detail {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 0.9375rem;
+}
+.sidebar-detail:last-of-type { border-bottom: none; }
+.sidebar-label { font-size: 0.8125rem; font-weight: 500; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; }
+.sidebar-detail a { color: var(--green); }
+.external-link { text-decoration: underline; }
+.sidebar-tags { display: flex; flex-wrap: wrap; gap: 6px; }
+.ad-placeholder {
+  background: var(--border);
+  border-radius: var(--radius-sm);
+  height: 250px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  color: var(--text-light);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+.owner-accordion {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 16px;
+}
+.owner-accordion summary {
+  font-size: 0.875rem;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+.owner-content { margin-top: 14px; }
+.owner-content p { font-size: 0.9rem; color: var(--text-muted); }
+.owner-content a { color: var(--green); }
+</style>
+
+<script is:inline define:vars={{ lat: r.lat, lng: r.lng, name: r.name, token: import.meta.env.PUBLIC_MAPBOX_TOKEN }}>
+if (token) {
+  (async () => {
+    const el = document.getElementById('listing-map');
+    if (!el) return;
+    const mapboxgl = await import('https://cdn.skypack.dev/mapbox-gl');
+    mapboxgl.accessToken = token;
+    const map = new mapboxgl.Map({
+      container: el,
+      style: 'mapbox://styles/mapbox/light-v11',
+      center: [lng, lat],
+      zoom: 14,
+      interactive: false,
+    });
+    new mapboxgl.Marker({ color: '#2D5016' })
+      .setLngLat([lng, lat])
+      .addTo(map);
+  })();
+} else {
+  const el = document.getElementById('listing-map');
+  if (el) el.innerHTML = `<div style="padding:24px;text-align:center;color:#6b6457"><p>${name}</p><p style="font-size:0.875rem;margin-top:8px">${lat.toFixed(4)}°N, ${Math.abs(lng).toFixed(4)}°W</p></div>`;
+}
+</script>
