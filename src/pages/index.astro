@@ -2,8 +2,8 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Map from '../components/Map.tsx';
 import FeaturedCarousel from '../components/FeaturedCarousel.tsx';
+import SearchFilter from '../components/SearchFilter.tsx';
 import EmailCapture from '../components/EmailCapture.astro';
-import RestaurantCard from '../components/RestaurantCard.astro';
 import { restaurants, getFeaturedRestaurants, getAreaStats } from '../data/restaurants';
 
 const featured = getFeaturedRestaurants();
@@ -32,6 +32,36 @@ const mapRestaurants = restaurants.map(r => ({
   halalOptions: r.halalOptions,
   featured: r.featured,
   shortDescription: r.shortDescription,
+}));
+
+const searchRestaurants = restaurants.map(r => ({
+  id: r.id,
+  slug: r.slug,
+  name: r.name,
+  area: r.area,
+  areaSlug: r.areaSlug,
+  city: r.city,
+  cuisineType: r.cuisineType,
+  priceRange: r.priceRange,
+  googleRating: r.googleRating,
+  reviewCount: r.reviewCount,
+  lat: r.lat,
+  lng: r.lng,
+  kidsMenu: r.kidsMenu,
+  highchairs: r.highchairs,
+  outdoorSpace: r.outdoorSpace,
+  softPlay: r.softPlay,
+  babyChanging: r.babyChanging,
+  buggyAccessible: r.buggyAccessible,
+  noiseLevel: r.noiseLevel,
+  bestForAgeRange: r.bestForAgeRange,
+  veganOptions: r.veganOptions,
+  glutenFreeOptions: r.glutenFreeOptions,
+  halalOptions: r.halalOptions,
+  featured: r.featured,
+  shortDescription: r.shortDescription,
+  photos: r.photos,
+  tags: r.tags,
 }));
 
 const schema = {
@@ -71,6 +101,17 @@ const schema = {
       <div class="hero-email">
         <EmailCapture variant="hero" />
       </div>
+    </div>
+  </section>
+
+  <!-- Search & filter -->
+  <section class="search-section">
+    <div class="container">
+      <div class="section-header">
+        <h2>Find your perfect family restaurant</h2>
+        <p>Search by name or location, then filter by what matters most to your family.</p>
+      </div>
+      <SearchFilter restaurants={searchRestaurants} client:load />
     </div>
   </section>
 
@@ -224,6 +265,9 @@ const schema = {
 .hero-email {
   padding: 32px 0 56px;
 }
+
+/* Search */
+.search-section { background: var(--white); }
 
 /* Featured */
 .featured-section { background: var(--cream); }

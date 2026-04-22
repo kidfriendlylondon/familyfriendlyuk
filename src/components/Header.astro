@@ -37,7 +37,7 @@ const path = Astro.url.pathname;
     </button>
   </div>
 
-  <div class="mobile-nav" id="mobile-nav" hidden>
+  <div class="mobile-nav" id="mobile-nav">
     {nav.map(item => (
       <a href={item.href} class="mobile-nav-link">{item.label}</a>
     ))}
@@ -118,13 +118,14 @@ const path = Astro.url.pathname;
   border-radius: 2px;
 }
 .mobile-nav {
-  display: flex;
+  display: none;
   flex-direction: column;
   padding: 16px 24px 20px;
   background: var(--white);
   border-top: 1px solid var(--border);
   gap: 4px;
 }
+.mobile-nav.open { display: flex; }
 .mobile-nav-link {
   padding: 10px 12px;
   color: var(--text);
@@ -144,8 +145,8 @@ const path = Astro.url.pathname;
 const ham = document.getElementById('hamburger');
 const nav = document.getElementById('mobile-nav');
 ham?.addEventListener('click', () => {
-  const open = nav?.hidden === false;
-  if (nav) nav.hidden = open;
+  const open = nav?.classList.contains('open');
+  nav?.classList.toggle('open', !open);
   ham.setAttribute('aria-expanded', String(!open));
 });
 </script>

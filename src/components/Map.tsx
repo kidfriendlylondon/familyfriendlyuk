@@ -169,6 +169,8 @@ export default function Map({ restaurants }: { restaurants: Restaurant[] }) {
 
   const activeFilterCount = Object.entries(filters).filter(([, v]) => v !== '' && v !== false).length;
 
+  const isPlaceholder = !TOKEN || TOKEN.startsWith('pk.placeholder');
+
   if (!TOKEN) {
     return (
       <div style={{ background: '#eef3e8', borderRadius: '12px', padding: '48px', textAlign: 'center', color: '#2D5016' }}>
