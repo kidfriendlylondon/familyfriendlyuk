@@ -32,24 +32,41 @@ interface Restaurant {
 
 interface ActiveFilters {
   search: string;
-  highchairs: boolean;
   kidsMenu: boolean;
-  outdoorSpace: boolean;
+  highchairs: boolean;
   buggyFriendly: boolean;
   softPlay: boolean;
-  cuisine: string;
-  price: string;
-  ageRange: string;
+  outdoorSpace: boolean;
+  babyChanging: boolean;
   vegan: boolean;
   glutenFree: boolean;
   halal: boolean;
 }
 
 const EMPTY: ActiveFilters = {
-  search: '', highchairs: false, kidsMenu: false, outdoorSpace: false,
-  buggyFriendly: false, softPlay: false, cuisine: '', price: '',
-  ageRange: '', vegan: false, glutenFree: false, halal: false,
+  search: '',
+  kidsMenu: false,
+  highchairs: false,
+  buggyFriendly: false,
+  softPlay: false,
+  outdoorSpace: false,
+  babyChanging: false,
+  vegan: false,
+  glutenFree: false,
+  halal: false,
 };
+
+const CHECKBOX_FILTERS: { key: Exclude<keyof ActiveFilters, 'search'>; label: string }[] = [
+  { key: 'kidsMenu', label: 'Kids menu' },
+  { key: 'highchairs', label: 'Highchairs' },
+  { key: 'buggyFriendly', label: 'Buggy friendly' },
+  { key: 'softPlay', label: 'Soft play' },
+  { key: 'outdoorSpace', label: 'Outdoor space' },
+  { key: 'babyChanging', label: 'Baby changing' },
+  { key: 'vegan', label: 'Vegan' },
+  { key: 'glutenFree', label: 'Gluten free' },
+  { key: 'halal', label: 'Halal' },
+];
 
 function applyFilters(list: Restaurant[], f: ActiveFilters): Restaurant[] {
   return list.filter(r => {
@@ -57,14 +74,12 @@ function applyFilters(list: Restaurant[], f: ActiveFilters): Restaurant[] {
       const q = f.search.toLowerCase();
       if (!r.name.toLowerCase().includes(q) && !r.area.toLowerCase().includes(q) && !r.city.toLowerCase().includes(q) && !r.cuisineType.toLowerCase().includes(q)) return false;
     }
-    if (f.highchairs && r.highchairs !== 'yes') return false;
     if (f.kidsMenu && r.kidsMenu !== 'yes') return false;
-    if (f.outdoorSpace && r.outdoorSpace !== 'yes') return false;
+    if (f.highchairs && r.highchairs !== 'yes') return false;
     if (f.buggyFriendly && r.buggyAccessible !== 'yes') return false;
     if (f.softPlay && r.softPlay !== 'yes') return false;
-    if (f.cuisine && !r.cuisineType.toLowerCase().includes(f.cuisine.toLowerCase())) return false;
-    if (f.price && r.priceRange !== f.price) return false;
-    if (f.ageRange && !r.bestForAgeRange.includes(f.ageRange) && !r.bestForAgeRange.includes('all ages')) return false;
+    if (f.outdoorSpace && r.outdoorSpace !== 'yes') return false;
+    if (f.babyChanging && r.babyChanging !== 'yes') return false;
     if (f.vegan && r.veganOptions !== 'yes') return false;
     if (f.glutenFree && r.glutenFreeOptions !== 'yes') return false;
     if (f.halal && r.halalOptions !== 'yes') return false;
@@ -141,14 +156,6 @@ function Card({ r }: { r: Restaurant }) {
   );
 }
 
-const PILL_FILTERS: { key: keyof ActiveFilters; label: string; icon: string }[] = [
-  { key: 'highchairs', label: 'Highchairs', icon: '🪑' },
-  { key: 'kidsMenu', label: 'Kids Menu', icon: '🍽️' },
-  { key: 'outdoorSpace', label: 'Outdoor Space', icon: '🌿' },
-  { key: 'buggyFriendly', label: 'Buggy Friendly', icon: '🛻' },
-  { key: 'softPlay', label: 'Soft Play', icon: '🎪' },
-];
-
 export default function SearchFilter({ restaurants }: { restaurants: Restaurant[] }) {
   const [filters, setFilters] = useState<ActiveFilters>(EMPTY);
   const [submitted, setSubmitted] = useState(false);
@@ -158,11 +165,11 @@ export default function SearchFilter({ restaurants }: { restaurants: Restaurant[
   const results = useMemo(() => applyFilters(restaurants, activeFilters), [activeFilters, restaurants]);
 
   const activeCount = useMemo(() =>
-    Object.entries(draft).filter(([k, v]) => k !== 'search' ? v !== '' && v !== false : (v as string).trim() !== '').length,
+    Object.entries(draft).filter(([k, v]) => k === 'search' ? (v as string).trim() !== '' : v === true).length,
     [draft]
   );
 
-  function toggle(key: keyof ActiveFilters) {
+  function toggle(key: Exclude<keyof ActiveFilters, 'search'>) {
     setDraft(d => ({ ...d, [key]: !d[key] }));
   }
   function setDraftField(key: keyof ActiveFilters, value: string) {
@@ -204,100 +211,31 @@ export default function SearchFilter({ restaurants }: { restaurants: Restaurant[
           />
         </div>
 
-        {/* Filter pills */}
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginBottom: '16px', alignItems: 'center' }}>
-          <span style={{ fontSize: '0.8125rem', color: '#6b6457', fontWeight: 500, marginRight: '4px' }}>Must have:</span>
-          {PILL_FILTERS.map(({ key, label, icon }) => (
-            <button
+        {/* Filter checkboxes */}
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginBottom: '20px' }}>
+          {CHECKBOX_FILTERS.map(({ key, label }) => (
+            <label
               key={key}
-              type="button"
-              onClick={() => toggle(key)}
               style={{
-                display: 'inline-flex', alignItems: 'center', gap: '5px',
-                padding: '7px 14px', borderRadius: '20px', fontSize: '0.875rem', fontWeight: 500,
-                cursor: 'pointer', transition: 'all 0.15s', border: '1.5px solid',
+                display: 'inline-flex', alignItems: 'center', gap: '6px',
+                padding: '8px 14px', borderRadius: '20px', fontSize: '0.875rem',
+                cursor: 'pointer', userSelect: 'none', transition: 'all 0.15s',
+                border: '1.5px solid',
                 borderColor: draft[key] ? '#2D5016' : '#e8e2d9',
-                background: draft[key] ? '#2D5016' : 'white',
-                color: draft[key] ? 'white' : '#1A1A1A',
+                background: draft[key] ? '#eef3e8' : 'white',
+                color: '#1A1A1A',
                 fontFamily: 'inherit',
               }}
             >
-              <span>{icon}</span>{label}
-            </button>
+              <input
+                type="checkbox"
+                checked={draft[key]}
+                onChange={() => toggle(key)}
+                style={{ accentColor: '#2D5016', margin: 0 }}
+              />
+              {label}
+            </label>
           ))}
-        </div>
-
-        {/* Dropdown filters */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: '10px', marginBottom: '20px' }}>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-            <label style={{ fontSize: '0.8rem', fontWeight: 500, color: '#6b6457', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Cuisine</label>
-            <select
-              value={draft.cuisine}
-              onChange={e => setDraftField('cuisine', e.target.value)}
-              style={{ padding: '9px 12px', border: '1.5px solid #e8e2d9', borderRadius: '6px', fontSize: '0.9375rem', background: 'white', color: draft.cuisine ? '#1A1A1A' : '#9a9086', fontFamily: 'inherit' }}
-            >
-              <option value="">All cuisines</option>
-              <option value="Italian">Italian</option>
-              <option value="Indian">Indian</option>
-              <option value="British">British</option>
-              <option value="Mediterranean">Mediterranean</option>
-              <option value="French">French</option>
-              <option value="Turkish">Turkish</option>
-              <option value="American">American</option>
-              <option value="Thai">Thai</option>
-              <option value="Burgers">Burgers</option>
-              <option value="Pizza">Pizza</option>
-              <option value="Pub">Pub</option>
-              <option value="Brunch">Brunch / Café</option>
-              <option value="Vegan">Vegan / Plant-based</option>
-              <option value="Caribbean">Caribbean</option>
-            </select>
-          </div>
-
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-            <label style={{ fontSize: '0.8rem', fontWeight: 500, color: '#6b6457', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Price</label>
-            <select
-              value={draft.price}
-              onChange={e => setDraftField('price', e.target.value)}
-              style={{ padding: '9px 12px', border: '1.5px solid #e8e2d9', borderRadius: '6px', fontSize: '0.9375rem', background: 'white', color: draft.price ? '#1A1A1A' : '#9a9086', fontFamily: 'inherit' }}
-            >
-              <option value="">Any price</option>
-              <option value="£">£ — Budget</option>
-              <option value="££">££ — Mid-range</option>
-              <option value="$$$">£££ — Special occasion</option>
-            </select>
-          </div>
-
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-            <label style={{ fontSize: '0.8rem', fontWeight: 500, color: '#6b6457', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Age range</label>
-            <select
-              value={draft.ageRange}
-              onChange={e => setDraftField('ageRange', e.target.value)}
-              style={{ padding: '9px 12px', border: '1.5px solid #e8e2d9', borderRadius: '6px', fontSize: '0.9375rem', background: 'white', color: draft.ageRange ? '#1A1A1A' : '#9a9086', fontFamily: 'inherit' }}
-            >
-              <option value="">All ages</option>
-              <option value="babies">Babies</option>
-              <option value="toddlers">Toddlers</option>
-              <option value="primary">Primary age</option>
-            </select>
-          </div>
-
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-            <label style={{ fontSize: '0.8rem', fontWeight: 500, color: '#6b6457', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Dietary</label>
-            <select
-              value={draft.vegan ? 'vegan' : draft.glutenFree ? 'gluten-free' : draft.halal ? 'halal' : ''}
-              onChange={e => {
-                const v = e.target.value;
-                setDraft(d => ({ ...d, vegan: v === 'vegan', glutenFree: v === 'gluten-free', halal: v === 'halal' }));
-              }}
-              style={{ padding: '9px 12px', border: '1.5px solid #e8e2d9', borderRadius: '6px', fontSize: '0.9375rem', background: 'white', color: (draft.vegan || draft.glutenFree || draft.halal) ? '#1A1A1A' : '#9a9086', fontFamily: 'inherit' }}
-            >
-              <option value="">No preference</option>
-              <option value="vegan">Vegan options</option>
-              <option value="gluten-free">Gluten free options</option>
-              <option value="halal">Halal</option>
-            </select>
-          </div>
         </div>
 
         {/* Submit row */}

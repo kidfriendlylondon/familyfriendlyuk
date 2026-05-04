@@ -15,10 +15,10 @@ interface Restaurant {
   lng: number;
   kidsMenu: string;
   highchairs: string;
-  outdoorSpace: string;
   buggyAccessible: string;
-  noiseLevel: string;
-  bestForAgeRange: string[];
+  softPlay: string;
+  outdoorSpace: string;
+  babyChanging: string;
   veganOptions: string;
   glutenFreeOptions: string;
   halalOptions: string;
@@ -27,47 +27,41 @@ interface Restaurant {
 }
 
 interface Filters {
-  cuisine: string;
-  price: string;
   kidsMenu: boolean;
   highchairs: boolean;
-  outdoorSpace: boolean;
   buggyFriendly: boolean;
+  softPlay: boolean;
+  outdoorSpace: boolean;
+  babyChanging: boolean;
   vegan: boolean;
   glutenFree: boolean;
   halal: boolean;
-  ageRange: string;
-  noise: string;
 }
 
 const DEFAULT_FILTERS: Filters = {
-  cuisine: '',
-  price: '',
   kidsMenu: false,
   highchairs: false,
-  outdoorSpace: false,
   buggyFriendly: false,
+  softPlay: false,
+  outdoorSpace: false,
+  babyChanging: false,
   vegan: false,
   glutenFree: false,
   halal: false,
-  ageRange: '',
-  noise: '',
 };
 
 const TOKEN = import.meta.env.PUBLIC_MAPBOX_TOKEN || '';
 
 function matchesFilters(r: Restaurant, f: Filters): boolean {
-  if (f.cuisine && !r.cuisineType.toLowerCase().includes(f.cuisine.toLowerCase())) return false;
-  if (f.price && r.priceRange !== f.price) return false;
   if (f.kidsMenu && r.kidsMenu !== 'yes') return false;
   if (f.highchairs && r.highchairs !== 'yes') return false;
-  if (f.outdoorSpace && r.outdoorSpace !== 'yes') return false;
   if (f.buggyFriendly && r.buggyAccessible !== 'yes') return false;
+  if (f.softPlay && r.softPlay !== 'yes') return false;
+  if (f.outdoorSpace && r.outdoorSpace !== 'yes') return false;
+  if (f.babyChanging && r.babyChanging !== 'yes') return false;
   if (f.vegan && r.veganOptions !== 'yes') return false;
   if (f.glutenFree && r.glutenFreeOptions !== 'yes') return false;
   if (f.halal && r.halalOptions !== 'yes') return false;
-  if (f.ageRange && !r.bestForAgeRange.includes(f.ageRange) && !r.bestForAgeRange.includes('all ages')) return false;
-  if (f.noise && r.noiseLevel !== f.noise) return false;
   return true;
 }
 
@@ -162,11 +156,11 @@ export default function Map({ restaurants }: { restaurants: Restaurant[] }) {
     );
   };
 
-  const updateFilter = (key: keyof Filters, value: string | boolean) => {
+  const updateFilter = (key: keyof Filters, value: boolean) => {
     setFilters(prev => ({ ...prev, [key]: value }));
   };
 
-  const activeFilterCount = Object.entries(filters).filter(([, v]) => v !== '' && v !== false).length;
+  const activeFilterCount = Object.values(filters).filter(v => v).length;
 
   const isPlaceholder = !TOKEN || TOKEN.startsWith('pk.placeholder');
 
@@ -204,78 +198,29 @@ export default function Map({ restaurants }: { restaurants: Restaurant[] }) {
 
       {/* Filter panel (always visible) */}
       <div className="filter-panel">
-          <div className="filter-row">
-            <label>
-              Cuisine
-              <select value={filters.cuisine} onChange={e => updateFilter('cuisine', e.target.value)}>
-                <option value="">All cuisines</option>
-                <option value="Italian">Italian</option>
-                <option value="Indian">Indian</option>
-                <option value="British">British</option>
-                <option value="Mediterranean">Mediterranean</option>
-                <option value="French">French</option>
-                <option value="Turkish">Turkish</option>
-                <option value="American">American</option>
-                <option value="Thai">Thai</option>
-                <option value="Burgers">Burgers</option>
-                <option value="Pizza">Pizza</option>
-                <option value="Pub">Pub</option>
-                <option value="Brunch">Brunch</option>
-              </select>
+        <div className="filter-checks">
+          {([
+            ['kidsMenu', 'Kids menu'],
+            ['highchairs', 'Highchairs'],
+            ['buggyFriendly', 'Buggy friendly'],
+            ['softPlay', 'Soft play'],
+            ['outdoorSpace', 'Outdoor space'],
+            ['babyChanging', 'Baby changing'],
+            ['vegan', 'Vegan'],
+            ['glutenFree', 'Gluten free'],
+            ['halal', 'Halal'],
+          ] as const).map(([key, label]) => (
+            <label key={key} className="filter-check">
+              <input
+                type="checkbox"
+                checked={filters[key]}
+                onChange={e => updateFilter(key, e.target.checked)}
+              />
+              {label}
             </label>
-
-            <label>
-              Price
-              <select value={filters.price} onChange={e => updateFilter('price', e.target.value)}>
-                <option value="">Any price</option>
-                <option value="£">£ Budget</option>
-                <option value="££">££ Mid-range</option>
-                <option value="$$$">£££ Special</option>
-              </select>
-            </label>
-
-            <label>
-              Age range
-              <select value={filters.ageRange} onChange={e => updateFilter('ageRange', e.target.value)}>
-                <option value="">Any age</option>
-                <option value="babies">Babies</option>
-                <option value="toddlers">Toddlers</option>
-                <option value="primary">Primary age</option>
-              </select>
-            </label>
-
-            <label>
-              Atmosphere
-              <select value={filters.noise} onChange={e => updateFilter('noise', e.target.value)}>
-                <option value="">Any</option>
-                <option value="quiet">Quiet</option>
-                <option value="moderate">Relaxed</option>
-                <option value="lively">Lively</option>
-              </select>
-            </label>
-          </div>
-
-          <div className="filter-checks">
-            {[
-              ['kidsMenu', "Kids menu"],
-              ['highchairs', "Highchairs"],
-              ['outdoorSpace', "Outdoor space"],
-              ['buggyFriendly', "Buggy friendly"],
-              ['vegan', "Vegan options"],
-              ['glutenFree', "Gluten free"],
-              ['halal', "Halal"],
-            ].map(([key, label]) => (
-              <label key={key} className="filter-check">
-                <input
-                  type="checkbox"
-                  checked={filters[key as keyof Filters] as boolean}
-                  onChange={e => updateFilter(key as keyof Filters, e.target.checked)}
-                />
-                {label}
-              </label>
-            ))}
-          </div>
+          ))}
         </div>
+      </div>
 
       {/* Map */}
       <div ref={mapContainer} className="map-container" />
@@ -314,35 +259,10 @@ export default function Map({ restaurants }: { restaurants: Restaurant[] }) {
           background: white;
           border: 1.5px solid #e8e2d9;
           border-radius: 12px;
-          padding: 20px;
+          padding: 16px 20px;
           margin-bottom: 12px;
-          display: flex;
-          flex-direction: column;
-          gap: 16px;
           box-shadow: 0 4px 16px rgba(45,80,22,0.1);
         }
-        .filter-row {
-          display: grid;
-          grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-          gap: 12px;
-        }
-        .filter-row label {
-          display: flex;
-          flex-direction: column;
-          gap: 5px;
-          font-size: 0.875rem;
-          font-weight: 500;
-          color: #1A1A1A;
-        }
-        .filter-row select {
-          padding: 8px 10px;
-          border: 1.5px solid #e8e2d9;
-          border-radius: 6px;
-          font-size: 0.875rem;
-          background: white;
-          color: #1A1A1A;
-        }
-        .filter-row select:focus { outline: none; border-color: #2D5016; }
         .filter-checks {
           display: flex;
           flex-wrap: wrap;
