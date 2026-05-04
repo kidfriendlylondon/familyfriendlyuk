@@ -76,7 +76,6 @@ export default function Map({ restaurants }: { restaurants: Restaurant[] }) {
   const mapRef = useRef<mapboxgl.Map | null>(null);
   const markersRef = useRef<mapboxgl.Marker[]>([]);
   const [filters, setFilters] = useState<Filters>(DEFAULT_FILTERS);
-  const [filtersOpen, setFiltersOpen] = useState(false);
   const [activeCount, setActiveCount] = useState(restaurants.length);
   const [locating, setLocating] = useState(false);
   const popupRef = useRef<mapboxgl.Popup | null>(null);
@@ -192,13 +191,6 @@ export default function Map({ restaurants }: { restaurants: Restaurant[] }) {
           {locating ? '⌛ Finding you…' : '📍 Near me'}
         </button>
 
-        <button
-          className={`map-btn ${filtersOpen ? 'active' : ''}`}
-          onClick={() => setFiltersOpen(o => !o)}
-        >
-          ⚙️ Filters{activeFilterCount > 0 ? ` (${activeFilterCount})` : ''}
-        </button>
-
         <span className="map-count">
           {activeCount} restaurant{activeCount !== 1 ? 's' : ''}
         </span>
@@ -210,9 +202,8 @@ export default function Map({ restaurants }: { restaurants: Restaurant[] }) {
         )}
       </div>
 
-      {/* Filter drawer */}
-      {filtersOpen && (
-        <div className="filter-panel">
+      {/* Filter panel (always visible) */}
+      <div className="filter-panel">
           <div className="filter-row">
             <label>
               Cuisine
@@ -285,7 +276,6 @@ export default function Map({ restaurants }: { restaurants: Restaurant[] }) {
             ))}
           </div>
         </div>
-      )}
 
       {/* Map */}
       <div ref={mapContainer} className="map-container" />
