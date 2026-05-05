@@ -1,30 +1,6 @@
-import { useEffect, useRef, useState, useCallback } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
-
-interface Restaurant {
-  id: string;
-  slug: string;
-  name: string;
-  area: string;
-  city: string;
-  cuisineType: string;
-  priceRange: string;
-  googleRating: number;
-  lat: number;
-  lng: number;
-  kidsMenu: string;
-  highchairs: string;
-  buggyAccessible: string;
-  softPlay: string;
-  outdoorSpace: string;
-  babyChanging: string;
-  veganOptions: string;
-  glutenFreeOptions: string;
-  halalOptions: string;
-  featured: boolean;
-  shortDescription: string;
-}
 
 interface Filters {
   kidsMenu: boolean;
@@ -51,68 +27,51 @@ const DEFAULT_FILTERS: Filters = {
 };
 
 const TOKEN = import.meta.env.PUBLIC_MAPBOX_TOKEN || '';
+const SOURCE_ID = 'restaurants';
+const DATA_URL = '/restaurants.geojson';
 
-function matchesFilters(r: Restaurant, f: Filters): boolean {
-  if (f.kidsMenu && r.kidsMenu !== 'yes') return false;
-  if (f.highchairs && r.highchairs !== 'yes') return false;
-  if (f.buggyFriendly && r.buggyAccessible !== 'yes') return false;
-  if (f.softPlay && r.softPlay !== 'yes') return false;
-  if (f.outdoorSpace && r.outdoorSpace !== 'yes') return false;
-  if (f.babyChanging && r.babyChanging !== 'yes') return false;
-  if (f.vegan && r.veganOptions !== 'yes') return false;
-  if (f.glutenFree && r.glutenFreeOptions !== 'yes') return false;
-  if (f.halal && r.halalOptions !== 'yes') return false;
-  return true;
+// Filter key → property key in the GeoJSON feature.properties (which uses 0/1 ints)
+const FILTER_PROP_MAP: Record<keyof Filters, string> = {
+  kidsMenu: 'kidsMenu',
+  highchairs: 'highchairs',
+  buggyFriendly: 'buggyAccessible',
+  softPlay: 'softPlay',
+  outdoorSpace: 'outdoorSpace',
+  babyChanging: 'babyChanging',
+  vegan: 'vegan',
+  glutenFree: 'glutenFree',
+  halal: 'halal',
+};
+
+type FeatureCollection = {
+  type: 'FeatureCollection';
+  features: Array<{
+    type: 'Feature';
+    id?: number;
+    geometry: { type: 'Point'; coordinates: [number, number] };
+    properties: Record<string, any>;
+  }>;
+};
+
+function applyFilters(fc: FeatureCollection, filters: Filters): FeatureCollection {
+  const active = (Object.keys(filters) as (keyof Filters)[]).filter(k => filters[k]);
+  if (active.length === 0) return fc;
+  return {
+    type: 'FeatureCollection',
+    features: fc.features.filter(f => active.every(k => f.properties[FILTER_PROP_MAP[k]] === 1)),
+  };
 }
 
-export default function Map({ restaurants }: { restaurants: Restaurant[] }) {
+export default function Map({ totalCount }: { totalCount: number }) {
   const mapContainer = useRef<HTMLDivElement>(null);
   const mapRef = useRef<mapboxgl.Map | null>(null);
-  const markersRef = useRef<mapboxgl.Marker[]>([]);
-  const [filters, setFilters] = useState<Filters>(DEFAULT_FILTERS);
-  const [activeCount, setActiveCount] = useState(restaurants.length);
-  const [locating, setLocating] = useState(false);
+  const dataRef = useRef<FeatureCollection | null>(null);
   const popupRef = useRef<mapboxgl.Popup | null>(null);
 
-  const filtered = restaurants.filter(r => matchesFilters(r, filters));
-
-  const clearMarkers = useCallback(() => {
-    markersRef.current.forEach(m => m.remove());
-    markersRef.current = [];
-  }, []);
-
-  const addMarkers = useCallback((list: Restaurant[]) => {
-    if (!mapRef.current) return;
-    clearMarkers();
-    list.forEach(r => {
-      const el = document.createElement('div');
-      el.className = r.featured ? 'map-marker map-marker--featured' : 'map-marker';
-      el.setAttribute('aria-label', r.name);
-
-      const popup = new mapboxgl.Popup({ offset: 25, maxWidth: '260px', closeButton: true })
-        .setHTML(`
-          <div class="map-popup">
-            <div style="font-size:0.75rem;color:#C4622D;font-weight:500;margin-bottom:4px">${r.cuisineType}</div>
-            <h4 style="font-family:Georgia,serif;font-size:1rem;margin-bottom:6px;color:#1A1A1A">${r.name}</h4>
-            <p style="font-size:0.8125rem;color:#6b6457;margin-bottom:4px">${r.area} · ${r.priceRange}</p>
-            <p style="font-size:0.8125rem;color:#6b6457;margin-bottom:10px">⭐ ${r.googleRating}</p>
-            <a href="/restaurants/${r.slug}" style="font-size:0.875rem;font-weight:500;color:#2D5016">View listing →</a>
-          </div>
-        `);
-
-      const marker = new mapboxgl.Marker(el)
-        .setLngLat([r.lng, r.lat])
-        .setPopup(popup)
-        .addTo(mapRef.current!);
-
-      el.addEventListener('click', () => {
-        if (popupRef.current && popupRef.current !== popup) popupRef.current.remove();
-        popupRef.current = popup;
-      });
-
-      markersRef.current.push(marker);
-    });
-  }, [clearMarkers]);
+  const [filters, setFilters] = useState<Filters>(DEFAULT_FILTERS);
+  const [activeCount, setActiveCount] = useState(totalCount);
+  const [locating, setLocating] = useState(false);
+  const [dataReady, setDataReady] = useState(false);
 
   useEffect(() => {
     if (!mapContainer.current || mapRef.current) return;
@@ -123,24 +82,137 @@ export default function Map({ restaurants }: { restaurants: Restaurant[] }) {
     const map = new mapboxgl.Map({
       container: mapContainer.current,
       style: 'mapbox://styles/mapbox/light-v11',
-      center: [-0.127, 51.507],
-      zoom: 10,
+      center: [-3, 54.5],
+      zoom: 5,
+      minZoom: 4,
+      maxZoom: 18,
     });
 
     map.addControl(new mapboxgl.NavigationControl({ showCompass: false }), 'top-right');
-    map.on('load', () => {
-      addMarkers(restaurants);
+
+    map.on('load', async () => {
+      try {
+        const res = await fetch(DATA_URL);
+        const fc: FeatureCollection = await res.json();
+        dataRef.current = fc;
+
+        map.addSource(SOURCE_ID, {
+          type: 'geojson',
+          data: fc,
+          cluster: true,
+          clusterMaxZoom: 14,
+          clusterRadius: 60,
+        });
+
+        map.addLayer({
+          id: 'clusters',
+          type: 'circle',
+          source: SOURCE_ID,
+          filter: ['has', 'point_count'],
+          paint: {
+            'circle-color': [
+              'step', ['get', 'point_count'],
+              '#9bbb6e', 25,
+              '#5d8e3e', 100,
+              '#2D5016',
+            ],
+            'circle-radius': [
+              'step', ['get', 'point_count'],
+              18, 25, 24, 100, 32,
+            ],
+            'circle-stroke-width': 2,
+            'circle-stroke-color': '#ffffff',
+            'circle-opacity': 0.92,
+          },
+        });
+
+        map.addLayer({
+          id: 'cluster-count',
+          type: 'symbol',
+          source: SOURCE_ID,
+          filter: ['has', 'point_count'],
+          layout: {
+            'text-field': ['get', 'point_count_abbreviated'],
+            'text-font': ['DIN Offc Pro Medium', 'Arial Unicode MS Bold'],
+            'text-size': 13,
+          },
+          paint: { 'text-color': '#ffffff' },
+        });
+
+        map.addLayer({
+          id: 'unclustered-point',
+          type: 'circle',
+          source: SOURCE_ID,
+          filter: ['!', ['has', 'point_count']],
+          paint: {
+            'circle-color': ['case', ['==', ['get', 'featured'], true], '#C4622D', '#2D5016'],
+            'circle-radius': ['case', ['==', ['get', 'featured'], true], 8, 6],
+            'circle-stroke-width': 2,
+            'circle-stroke-color': '#ffffff',
+          },
+        });
+
+        // Click cluster → zoom in
+        map.on('click', 'clusters', (e) => {
+          const feats = map.queryRenderedFeatures(e.point, { layers: ['clusters'] });
+          const clusterId = feats[0].properties?.cluster_id;
+          const source = map.getSource(SOURCE_ID) as mapboxgl.GeoJSONSource;
+          source.getClusterExpansionZoom(clusterId, (err, zoom) => {
+            if (err || zoom == null) return;
+            const coords = (feats[0].geometry as any).coordinates as [number, number];
+            map.easeTo({ center: coords, zoom });
+          });
+        });
+
+        // Click point → popup
+        map.on('click', 'unclustered-point', (e) => {
+          const f = e.features?.[0];
+          if (!f) return;
+          const coords = (f.geometry as any).coordinates.slice() as [number, number];
+          const p = f.properties as any;
+          if (popupRef.current) popupRef.current.remove();
+          popupRef.current = new mapboxgl.Popup({ offset: 12, maxWidth: '260px' })
+            .setLngLat(coords)
+            .setHTML(`
+              <div class="map-popup">
+                <div style="font-size:0.75rem;color:#C4622D;font-weight:500;margin-bottom:4px">${escapeHtml(p.cuisineType ?? '')}</div>
+                <h4 style="font-family:Georgia,serif;font-size:1rem;margin-bottom:6px;color:#1A1A1A">${escapeHtml(p.name ?? '')}</h4>
+                <p style="font-size:0.8125rem;color:#6b6457;margin-bottom:4px">${escapeHtml(p.area ?? '')} · ${escapeHtml(p.priceRange ?? '')}</p>
+                <p style="font-size:0.8125rem;color:#6b6457;margin-bottom:10px">⭐ ${p.googleRating ?? ''}</p>
+                <a href="/restaurants/${encodeURIComponent(p.slug)}" style="font-size:0.875rem;font-weight:500;color:#2D5016">View listing →</a>
+              </div>
+            `)
+            .addTo(map);
+        });
+
+        // Cursor hints
+        const setPointer = () => { map.getCanvas().style.cursor = 'pointer'; };
+        const clearPointer = () => { map.getCanvas().style.cursor = ''; };
+        map.on('mouseenter', 'clusters', setPointer);
+        map.on('mouseleave', 'clusters', clearPointer);
+        map.on('mouseenter', 'unclustered-point', setPointer);
+        map.on('mouseleave', 'unclustered-point', clearPointer);
+
+        setActiveCount(fc.features.length);
+        setDataReady(true);
+      } catch (err) {
+        console.error('Failed to load restaurants.geojson', err);
+      }
     });
 
     mapRef.current = map;
     return () => { map.remove(); mapRef.current = null; };
   }, []);
 
+  // Apply filters to the source data
   useEffect(() => {
-    if (!mapRef.current?.loaded()) return;
-    addMarkers(filtered);
-    setActiveCount(filtered.length);
-  }, [filters]);
+    if (!mapRef.current?.loaded() || !dataRef.current) return;
+    const source = mapRef.current.getSource(SOURCE_ID) as mapboxgl.GeoJSONSource | undefined;
+    if (!source) return;
+    const filtered = applyFilters(dataRef.current, filters);
+    source.setData(filtered);
+    setActiveCount(filtered.features.length);
+  }, [filters, dataReady]);
 
   const handleNearMe = () => {
     if (!navigator.geolocation) return;
@@ -162,8 +234,6 @@ export default function Map({ restaurants }: { restaurants: Restaurant[] }) {
 
   const activeFilterCount = Object.values(filters).filter(v => v).length;
 
-  const isPlaceholder = !TOKEN || TOKEN.startsWith('pk.placeholder');
-
   if (!TOKEN) {
     return (
       <div style={{ background: '#eef3e8', borderRadius: '12px', padding: '48px', textAlign: 'center', color: '#2D5016' }}>
@@ -175,7 +245,6 @@ export default function Map({ restaurants }: { restaurants: Restaurant[] }) {
 
   return (
     <div className="map-wrapper">
-      {/* Controls bar */}
       <div className="map-controls">
         <button
           className={`map-btn map-btn--near-me ${locating ? 'loading' : ''}`}
@@ -186,7 +255,7 @@ export default function Map({ restaurants }: { restaurants: Restaurant[] }) {
         </button>
 
         <span className="map-count">
-          {activeCount} restaurant{activeCount !== 1 ? 's' : ''}
+          {dataReady ? `${activeCount.toLocaleString()} restaurant${activeCount !== 1 ? 's' : ''}` : 'Loading…'}
         </span>
 
         {activeFilterCount > 0 && (
@@ -196,7 +265,6 @@ export default function Map({ restaurants }: { restaurants: Restaurant[] }) {
         )}
       </div>
 
-      {/* Filter panel (always visible) */}
       <div className="filter-panel">
         <div className="filter-checks">
           {([
@@ -222,7 +290,6 @@ export default function Map({ restaurants }: { restaurants: Restaurant[] }) {
         </div>
       </div>
 
-      {/* Map */}
       <div ref={mapContainer} className="map-container" />
 
       <style>{`
@@ -292,24 +359,16 @@ export default function Map({ restaurants }: { restaurants: Restaurant[] }) {
         @media (max-width: 600px) {
           .map-container { height: 380px; }
         }
-        .map-marker {
-          width: 32px;
-          height: 32px;
-          border-radius: 50% 50% 50% 0;
-          transform: rotate(-45deg);
-          background: #2D5016;
-          border: 2px solid white;
-          box-shadow: 0 2px 8px rgba(0,0,0,0.25);
-          cursor: pointer;
-          transition: transform 0.15s;
-        }
-        .map-marker:hover { transform: rotate(-45deg) scale(1.2); }
-        .map-marker--featured {
-          background: #C4622D;
-          width: 38px;
-          height: 38px;
-        }
       `}</style>
     </div>
   );
+}
+
+function escapeHtml(s: string): string {
+  return String(s)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
 }

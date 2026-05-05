@@ -485,6 +485,7 @@ def process_file(path: Path, existing_keys: Set[Tuple[str, str]],
         'no_postcode': 0,
         'duplicate_existing': 0,
         'duplicate_intra': 0,
+        'not_family_friendly': 0,
         'qualifying': 0,
     }
 
@@ -564,6 +565,15 @@ def process_file(path: Path, existing_keys: Set[Tuple[str, str]],
         subtypes = row[idx['subtypes']] or ''
         attrs = derive_attributes(about, type_str, subtypes)
 
+        # Family-friendliness floor: reject venues where Google explicitly says
+        # NO kids menu AND NO highchairs AND NO buggy access. These are unlikely
+        # to be useful family-friendly listings even with a high rating.
+        if (attrs['kidsMenu'] == 'no'
+                and attrs['highchairs'] == 'no'
+                and attrs['buggyAccessible'] == 'no'):
+            stats['not_family_friendly'] += 1
+            continue
+
         cuisine = derive_cuisine(type_str)
         review_count = row[idx['reviews']] or 0
         try:
@@ -613,6 +623,7 @@ def process_file(path: Path, existing_keys: Set[Tuple[str, str]],
     print(f"    no lat/lng     : {stats['missing_latlng']:>6}", file=sys.stderr)
     print(f"    no postcode    : {stats['no_postcode']:>6}", file=sys.stderr)
     print(f"    dup (existing) : {stats['duplicate_existing']:>6}", file=sys.stderr)
+    print(f"    not family-friendly: {stats['not_family_friendly']:>2}", file=sys.stderr)
     print(f"  ACCEPTED         : {stats['qualifying']:>6}", file=sys.stderr)
     return accepted
 

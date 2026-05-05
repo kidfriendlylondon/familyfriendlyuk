@@ -10,30 +10,6 @@ const featured = getFeaturedRestaurants();
 const areaStats = getAreaStats();
 const areas = Object.entries(areaStats).sort((a, b) => b[1].count - a[1].count);
 
-const mapRestaurants = restaurants.map(r => ({
-  id: r.id,
-  slug: r.slug,
-  name: r.name,
-  area: r.area,
-  city: r.city,
-  cuisineType: r.cuisineType,
-  priceRange: r.priceRange,
-  googleRating: r.googleRating,
-  lat: r.lat,
-  lng: r.lng,
-  kidsMenu: r.kidsMenu,
-  highchairs: r.highchairs,
-  buggyAccessible: r.buggyAccessible,
-  softPlay: r.softPlay,
-  outdoorSpace: r.outdoorSpace,
-  babyChanging: r.babyChanging,
-  veganOptions: r.veganOptions,
-  glutenFreeOptions: r.glutenFreeOptions,
-  halalOptions: r.halalOptions,
-  featured: r.featured,
-  shortDescription: r.shortDescription,
-}));
-
 const searchRestaurants = restaurants.map(r => ({
   id: r.id,
   slug: r.slug,
@@ -95,7 +71,7 @@ const schema = {
       </div>
 
       <div class="hero-map">
-        <Map restaurants={mapRestaurants} client:load />
+        <Map totalCount={restaurants.length} client:load />
       </div>
 
       <div class="hero-email">
