@@ -1,0 +1,182 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+
+<BaseLayout
+  title="About Family Friendly UK"
+  description="Family Friendly UK was started by Natalie, a mum on a mission to find genuinely family-friendly restaurants across the UK. Here's the story behind the site."
+>
+  <article class="about">
+    <div class="container">
+      <header class="about-hero">
+        <div class="leaf" aria-hidden="true">🌿</div>
+        <h1>Built by a parent, for parents.</h1>
+        <p class="kicker">The story behind Family Friendly UK</p>
+      </header>
+
+      <section class="about-section">
+        <h2>How this all started</h2>
+        <p>
+          Family Friendly UK was started by Natalie, a mum to a wonderful little girl. The idea
+          came from a problem she kept running into — whether visiting a new part of the
+          country or exploring closer to home, the same question always came up: <em>where can
+          we actually eat out as a family?</em> Not just somewhere that tolerates children, but
+          somewhere that genuinely welcomes them. Somewhere with highchairs, a decent kids
+          menu, space for a buggy, and food worth travelling for.
+        </p>
+        <p>
+          After searching for a resource that didn't exist, Natalie decided to build it
+          herself. Family Friendly UK is the guide she always wished she'd had — honest,
+          practical, and built around the things that actually matter when you're dining out
+          with little ones.
+        </p>
+      </section>
+
+      <section class="about-section about-section--soft">
+        <h2>The Screen-Free Restaurant Pack</h2>
+        <p>
+          Natalie is also an artist, which is why alongside the directory she has created the
+          <strong>Screen-Free Restaurant Pack</strong> — a free downloadable activity pack designed
+          to encourage children to draw, imagine, and be creative while they wait for their food.
+          No screens, just pencils and imagination.
+        </p>
+        <a href="/downloads" class="btn-download">
+          Download the free pack →
+        </a>
+      </section>
+
+      <section class="about-section">
+        <h2>Drawing futures we love</h2>
+        <p>
+          We also partner with <strong>Future We Love</strong>, an art and creativity platform
+          built around a simple idea: when people open their hearts and imagine better futures,
+          those futures become more possible. Every month we feature children's artwork
+          submitted through our free creative downloads — drawings of futures kids would love
+          to see. It's one of our favourite things.
+        </p>
+        <a href="https://futurewelove.com" class="link-explore" target="_blank" rel="noopener noreferrer">
+          Explore Future We Love →
+        </a>
+      </section>
+
+      <section class="about-cta">
+        <h2>Always free for families.</h2>
+        <p>
+          Family Friendly UK is always free for families. If you know a great
+          family-friendly restaurant we've missed, we'd love to hear about it.
+        </p>
+        <a href="/suggest" class="btn btn-terracotta btn-lg">Suggest a restaurant →</a>
+      </section>
+    </div>
+  </article>
+</BaseLayout>
+
+<style>
+.about {
+  background: var(--cream);
+  padding: 64px 0 88px;
+}
+.about-hero {
+  text-align: center;
+  margin-bottom: 64px;
+  max-width: 720px;
+  margin-left: auto;
+  margin-right: auto;
+}
+.about-hero .leaf {
+  font-size: 2.5rem;
+  margin-bottom: 18px;
+  display: inline-block;
+  transform: rotate(-12deg);
+}
+.about-hero h1 {
+  font-family: var(--font-serif);
+  font-size: clamp(2rem, 4.5vw, 3rem);
+  color: var(--green);
+  line-height: 1.15;
+  margin-bottom: 14px;
+}
+.about-hero .kicker {
+  font-size: 1.0625rem;
+  color: var(--text-muted);
+  font-style: italic;
+}
+.about-section {
+  background: var(--white);
+  padding: 40px 44px;
+  border-radius: var(--radius);
+  box-shadow: var(--card-shadow);
+  max-width: 760px;
+  margin: 0 auto 32px;
+  position: relative;
+}
+.about-section--soft {
+  background: var(--green-pale);
+  box-shadow: 0 2px 12px rgba(45,80,22,0.06);
+}
+.about-section h2 {
+  font-family: var(--font-serif);
+  font-size: 1.625rem;
+  color: var(--green);
+  margin-bottom: 18px;
+  line-height: 1.25;
+}
+.about-section p {
+  font-size: 1.0625rem;
+  line-height: 1.8;
+  color: var(--text);
+  margin-bottom: 16px;
+}
+.about-section p:last-of-type { margin-bottom: 0; }
+.about-section em { color: var(--terracotta); font-style: italic; }
+.about-section strong { color: var(--green); font-weight: 600; }
+.btn-download {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 22px;
+  padding: 12px 24px;
+  border-radius: var(--radius-sm);
+  background: var(--green);
+  color: white;
+  font-weight: 500;
+  font-size: 1rem;
+  text-decoration: none;
+  transition: background 0.15s, transform 0.15s;
+}
+.btn-download:hover { background: var(--green-light); transform: translateY(-1px); }
+.link-explore {
+  display: inline-block;
+  margin-top: 14px;
+  color: var(--terracotta);
+  font-weight: 500;
+  text-decoration: none;
+  border-bottom: 1.5px solid currentColor;
+  padding-bottom: 1px;
+  transition: color 0.15s;
+}
+.link-explore:hover { color: var(--terracotta-light); }
+.about-cta {
+  text-align: center;
+  margin-top: 64px;
+  max-width: 640px;
+  margin-left: auto;
+  margin-right: auto;
+  padding: 0 16px;
+}
+.about-cta h2 {
+  font-family: var(--font-serif);
+  font-size: 1.75rem;
+  color: var(--green);
+  margin-bottom: 14px;
+}
+.about-cta p {
+  font-size: 1.0625rem;
+  color: var(--text-muted);
+  line-height: 1.7;
+  margin-bottom: 24px;
+}
+@media (max-width: 600px) {
+  .about-section { padding: 32px 24px; }
+}
+</style>

@@ -11,6 +11,7 @@ export function GET() {
       slug: r.slug,
       name: r.name,
       area: r.area,
+      areaSlug: r.areaSlug,
       cuisineType: r.cuisineType,
       priceRange: r.priceRange,
       googleRating: r.googleRating,

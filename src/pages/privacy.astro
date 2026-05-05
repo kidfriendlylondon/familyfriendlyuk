@@ -1,0 +1,165 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+
+const lastUpdated = '5 May 2026';
+---
+
+<BaseLayout
+  title="Privacy Policy | Family Friendly UK"
+  description="How Family Friendly UK collects, uses, and protects your personal data, in line with UK GDPR and the Data Protection Act 2018."
+>
+  <div class="page-hero">
+    <div class="container">
+      <nav class="breadcrumb" aria-label="Breadcrumb">
+        <a href="/">Home</a>
+        <span class="sep" aria-hidden="true">›</span>
+        <span aria-current="page">Privacy Policy</span>
+      </nav>
+      <h1>Privacy Policy</h1>
+      <p>Last updated: {lastUpdated}</p>
+    </div>
+  </div>
+
+  <section>
+    <div class="container legal-prose">
+      <p>
+        This Privacy Policy explains how Family Friendly UK ("we", "us", "our") collects, uses,
+        and protects your personal information when you use our website. We're committed to
+        handling your data in line with the UK General Data Protection Regulation (UK GDPR) and
+        the Data Protection Act 2018.
+      </p>
+
+      <h2>Who we are</h2>
+      <p>
+        Family Friendly UK is a directory of family-friendly restaurants across the UK. We are
+        the data controller for any personal data you provide through this site. If you have any
+        questions about this policy or how your data is handled, please contact us through our
+        <a href="/suggest">contact form</a>.
+      </p>
+
+      <h2>What we collect</h2>
+      <p>We may collect the following information:</p>
+      <ul>
+        <li>
+          <strong>Information you submit</strong> — when you suggest a restaurant, sign up to
+          our newsletter, or contact us, we collect the details you provide such as your name,
+          email address, and any message you send.
+        </li>
+        <li>
+          <strong>Usage information</strong> — like most websites, we collect basic information
+          about how visitors use the site, such as pages viewed and approximate location, to
+          help us improve the service.
+        </li>
+        <li>
+          <strong>Location data</strong> — if you use the "Near me" feature, your browser will
+          ask for permission to share your location. This is used only to centre the map; it's
+          not stored or shared.
+        </li>
+      </ul>
+
+      <h2>How we use your data</h2>
+      <p>We use the information we collect to:</p>
+      <ul>
+        <li>Respond to restaurant suggestions and other enquiries</li>
+        <li>Send our newsletter (only if you've signed up — you can unsubscribe at any time)</li>
+        <li>Understand how the site is used, so we can make it better</li>
+        <li>Comply with our legal obligations</li>
+      </ul>
+      <p>
+        Our lawful bases for processing under UK GDPR are: your consent (e.g. newsletter
+        sign-up), the performance of a service you've requested (e.g. responding to a
+        suggestion), and our legitimate interests (e.g. improving the site).
+      </p>
+
+      <h2>Cookies and analytics</h2>
+      <p>
+        We use a small number of cookies to make the site work and to understand how it's used:
+      </p>
+      <ul>
+        <li>
+          <strong>Essential cookies</strong> — required for core functionality such as
+          remembering your preferences. These don't need consent.
+        </li>
+        <li>
+          <strong>Analytics cookies</strong> — help us count visitors and see which pages are
+          popular, in aggregate. We don't use these to identify individuals.
+        </li>
+        <li>
+          <strong>Mapbox</strong> — our interactive map is provided by Mapbox, which may set
+          cookies for performance and crash reporting. See the
+          <a href="https://www.mapbox.com/legal/privacy" rel="noopener noreferrer" target="_blank">Mapbox privacy notice</a>.
+        </li>
+      </ul>
+      <p>
+        You can control cookies through your browser settings. Blocking cookies may affect how
+        the site works.
+      </p>
+
+      <h2>Sharing your data</h2>
+      <p>
+        We don't sell your personal data. We share it only with trusted service providers
+        needed to run the site (such as our newsletter provider and our hosting platform), and
+        only to the extent needed for them to provide their service. These providers act under
+        contract and are themselves obliged to protect your data.
+      </p>
+
+      <h2>How long we keep your data</h2>
+      <p>
+        We keep personal data only as long as we need it for the purposes set out above. Email
+        addresses on our newsletter list are kept until you unsubscribe. Suggestions and
+        enquiries are kept for up to two years after we've replied.
+      </p>
+
+      <h2>Your rights</h2>
+      <p>Under UK GDPR you have the right to:</p>
+      <ul>
+        <li>Ask for a copy of the personal data we hold about you</li>
+        <li>Ask us to correct data that's inaccurate</li>
+        <li>Ask us to delete your data ("right to erasure")</li>
+        <li>Object to or restrict our processing of your data</li>
+        <li>Withdraw consent at any time, where consent is the basis for processing</li>
+        <li>Lodge a complaint with the <a href="https://ico.org.uk/" rel="noopener noreferrer" target="_blank">Information Commissioner's Office</a></li>
+      </ul>
+      <p>
+        To exercise any of these rights, contact us through the <a href="/suggest">contact form</a>.
+      </p>
+
+      <h2>Children</h2>
+      <p>
+        This site is intended for use by adults planning meals out with their families. We
+        don't knowingly collect personal information from children under 13.
+      </p>
+
+      <h2>Changes to this policy</h2>
+      <p>
+        We may update this policy from time to time. The "Last updated" date at the top of this
+        page tells you when it was last changed.
+      </p>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+.legal-prose {
+  max-width: 760px;
+  font-size: 1rem;
+  line-height: 1.75;
+  color: var(--text);
+  padding: 24px 24px 64px;
+}
+.legal-prose h2 {
+  font-family: var(--font-serif);
+  font-size: 1.4rem;
+  color: var(--green);
+  margin: 36px 0 12px;
+}
+.legal-prose p { margin-bottom: 14px; color: var(--text-muted); }
+.legal-prose ul {
+  margin: 4px 0 18px 0;
+  padding-left: 20px;
+  color: var(--text-muted);
+}
+.legal-prose li { margin-bottom: 8px; }
+.legal-prose a { color: var(--green); text-decoration: underline; }
+.legal-prose a:hover { color: var(--terracotta); }
+</style>

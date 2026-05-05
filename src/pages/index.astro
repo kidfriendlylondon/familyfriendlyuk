@@ -1,44 +1,16 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
-import Map from '../components/Map.tsx';
+import HomeSearchMap from '../components/HomeSearchMap.tsx';
 import FeaturedCarousel from '../components/FeaturedCarousel.tsx';
-import SearchFilter from '../components/SearchFilter.tsx';
 import EmailCapture from '../components/EmailCapture.astro';
 import { restaurants, getFeaturedRestaurants, getAreaStats } from '../data/restaurants';
 
 const featured = getFeaturedRestaurants();
 const areaStats = getAreaStats();
-const areas = Object.entries(areaStats).sort((a, b) => b[1].count - a[1].count);
-
-const searchRestaurants = restaurants.map(r => ({
-  id: r.id,
-  slug: r.slug,
-  name: r.name,
-  area: r.area,
-  areaSlug: r.areaSlug,
-  city: r.city,
-  cuisineType: r.cuisineType,
-  priceRange: r.priceRange,
-  googleRating: r.googleRating,
-  reviewCount: r.reviewCount,
-  lat: r.lat,
-  lng: r.lng,
-  kidsMenu: r.kidsMenu,
-  highchairs: r.highchairs,
-  outdoorSpace: r.outdoorSpace,
-  softPlay: r.softPlay,
-  babyChanging: r.babyChanging,
-  buggyAccessible: r.buggyAccessible,
-  noiseLevel: r.noiseLevel,
-  bestForAgeRange: r.bestForAgeRange,
-  veganOptions: r.veganOptions,
-  glutenFreeOptions: r.glutenFreeOptions,
-  halalOptions: r.halalOptions,
-  featured: r.featured,
-  shortDescription: r.shortDescription,
-  photos: r.photos,
-  tags: r.tags,
-}));
+const topAreas = Object.entries(areaStats)
+  .sort((a, b) => b[1].count - a[1].count)
+  .slice(0, 25);
+const totalAreasCovered = Object.keys(areaStats).length;
 
 const schema = {
   "@context": "https://schema.org",
@@ -70,24 +42,20 @@ const schema = {
         </p>
       </div>
 
-      <div class="hero-map">
-        <Map totalCount={restaurants.length} client:load />
-      </div>
-
       <div class="hero-email">
         <EmailCapture variant="hero" />
       </div>
     </div>
   </section>
 
-  <!-- Search & filter -->
-  <section class="search-section">
+  <!-- Search & map (search controls the map) -->
+  <section class="search-map-section">
     <div class="container">
       <div class="section-header">
         <h2>Find your perfect family restaurant</h2>
-        <p>Search by name or location, then filter by what matters most to your family.</p>
+        <p>Search a city or town, or filter by what matters most to your family. The map updates as you go.</p>
       </div>
-      <SearchFilter restaurants={searchRestaurants} client:load />
+      <HomeSearchMap totalCount={restaurants.length} client:load />
     </div>
   </section>
 
@@ -96,12 +64,12 @@ const schema = {
     <div class="container">
       <div class="section-header">
         <h2>Great places to try right now</h2>
-        <p>Restaurants we've genuinely loved and think every UK family should know about.</p>
+        <p>Highly rated restaurants from across the UK that tick the boxes that matter for families.</p>
       </div>
       <FeaturedCarousel restaurants={featured} client:load />
       <div style="text-align:center;margin-top:36px">
         <a href="/regions" class="btn btn-secondary btn-lg">
-          Browse all regions
+          Browse cities
         </a>
       </div>
     </div>
@@ -112,48 +80,24 @@ const schema = {
     <div class="container">
       <div class="section-header">
         <h2>Explore by area</h2>
-        <p>We've started with London's best family neighbourhoods — more UK cities coming soon.</p>
+        <p>Browse family-friendly restaurants across the UK — from major cities to beloved market towns.</p>
       </div>
       <div class="areas-grid">
-        {areas.map(([slug, stat]) => (
+        {topAreas.map(([slug, stat]) => (
           <a href={`/area/${slug}`} class="area-card">
             <div class="area-card-inner">
               <div class="area-icon" aria-hidden="true">🗺️</div>
               <div>
                 <h3>{stat.name}</h3>
-                <p>{stat.count} restaurant{stat.count !== 1 ? 's' : ''}</p>
+                <p>{stat.count.toLocaleString()} restaurant{stat.count !== 1 ? 's' : ''}</p>
               </div>
             </div>
             <span class="area-arrow">→</span>
           </a>
         ))}
-        <div class="area-card area-card--coming-soon">
-          <div class="area-card-inner">
-            <div class="area-icon" aria-hidden="true">🏙️</div>
-            <div>
-              <h3>Manchester</h3>
-              <p>Coming soon</p>
-            </div>
-          </div>
-        </div>
-        <div class="area-card area-card--coming-soon">
-          <div class="area-card-inner">
-            <div class="area-icon" aria-hidden="true">🌊</div>
-            <div>
-              <h3>Edinburgh</h3>
-              <p>Coming soon</p>
-            </div>
-          </div>
-        </div>
-        <div class="area-card area-card--coming-soon">
-          <div class="area-card-inner">
-            <div class="area-icon" aria-hidden="true">🍃</div>
-            <div>
-              <h3>Bristol</h3>
-              <p>Coming soon</p>
-            </div>
-          </div>
-        </div>
+      </div>
+      <div style="text-align:center;margin-top:32px">
+        <a href="/regions" class="btn btn-secondary">View all top cities</a>
       </div>
     </div>
   </section>
@@ -171,7 +115,7 @@ const schema = {
             Every listing on Family Friendly UK tells you the things that actually matter as a parent: do they have highchairs? Is there outdoor space for buggies? Will the kids menu embarrass you? Is it quiet enough for a sleeping baby or buzzy enough that a toddler meltdown blends in?
           </p>
           <p>
-            We cover the whole UK, with London as our most detailed region. We're building this for parents who love good food and want their children to love it too.
+            We cover the whole UK — from Cornwall to the Highlands, every listing is checked for the things parents actually need.
           </p>
           <a href="/suggest" class="btn btn-secondary" style="margin-top:8px">
             Know a great place? Tell us →
@@ -179,12 +123,12 @@ const schema = {
         </div>
         <div class="why-stats">
           <div class="stat">
-            <div class="stat-number">{restaurants.length}+</div>
+            <div class="stat-number">{restaurants.length.toLocaleString()}+</div>
             <div class="stat-label">Restaurants reviewed</div>
           </div>
           <div class="stat">
-            <div class="stat-number">{areas.length}</div>
-            <div class="stat-label">Areas covered</div>
+            <div class="stat-number">{totalAreasCovered.toLocaleString()}</div>
+            <div class="stat-label">Cities &amp; towns covered</div>
           </div>
           <div class="stat">
             <div class="stat-number">12</div>
@@ -211,11 +155,11 @@ const schema = {
 /* Hero */
 .hero {
   background: var(--green);
-  padding: 56px 0 0;
+  padding: 56px 0 64px;
   color: white;
 }
 .hero .container { display: flex; flex-direction: column; gap: 32px; }
-.hero-text { max-width: 680px; }
+.hero-text { max-width: 760px; }
 .hero-text h1 {
   color: white;
   margin-bottom: 16px;
@@ -229,21 +173,15 @@ const schema = {
   color: rgba(255,255,255,0.82);
   font-size: 1.125rem;
   line-height: 1.7;
-  max-width: 580px;
+  max-width: 640px;
 }
-.hero-map {
-  background: var(--cream);
-  border-radius: 16px 16px 0 0;
-  padding: 24px;
-  margin: 0 -24px;
-}
-@media (min-width: 600px) { .hero-map { margin: 0; border-radius: 16px; } }
-.hero-email {
-  padding: 32px 0 56px;
-}
+.hero-email { padding-top: 8px; }
 
-/* Search */
-.search-section { background: var(--white); }
+/* Search + map */
+.search-map-section {
+  background: var(--white);
+  padding-top: 56px;
+}
 
 /* Featured */
 .featured-section { background: var(--cream); }
@@ -265,12 +203,11 @@ const schema = {
   border-radius: var(--radius);
   transition: all 0.2s;
 }
-.area-card:not(.area-card--coming-soon):hover {
+.area-card:hover {
   border-color: var(--green);
   background: var(--green-pale);
   transform: translateY(-2px);
 }
-.area-card--coming-soon { opacity: 0.5; cursor: default; }
 .area-card-inner { display: flex; gap: 14px; align-items: center; }
 .area-icon { font-size: 1.5rem; }
 .area-card h3 { font-family: var(--font-serif); font-size: 1.05rem; margin-bottom: 2px; }

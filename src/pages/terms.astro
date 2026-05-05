@@ -1,0 +1,149 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+
+const lastUpdated = '5 May 2026';
+---
+
+<BaseLayout
+  title="Terms of Service | Family Friendly UK"
+  description="The terms that apply when you use the Family Friendly UK website, including our restaurant-information disclaimer."
+>
+  <div class="page-hero">
+    <div class="container">
+      <nav class="breadcrumb" aria-label="Breadcrumb">
+        <a href="/">Home</a>
+        <span class="sep" aria-hidden="true">›</span>
+        <span aria-current="page">Terms of Service</span>
+      </nav>
+      <h1>Terms of Service</h1>
+      <p>Last updated: {lastUpdated}</p>
+    </div>
+  </div>
+
+  <section>
+    <div class="container legal-prose">
+      <p>
+        These terms apply when you use Family Friendly UK ("the site"). By using the site you
+        agree to these terms. If you don't agree, please don't use the site.
+      </p>
+
+      <h2>About the site</h2>
+      <p>
+        Family Friendly UK is a free directory of family-friendly restaurants across the UK.
+        The site is provided as a resource to help parents find places to eat with their
+        children. We don't own, operate, or have any commercial relationship with the
+        restaurants listed unless we explicitly say otherwise.
+      </p>
+
+      <h2>Restaurant information disclaimer</h2>
+      <p>
+        We work hard to keep listings accurate, but information about restaurants — opening
+        hours, prices, menus, accessibility, kid-friendly facilities, contact details — can
+        change at any time. <strong>The information on this site may not always be up to date.</strong>
+        Before you visit a restaurant, especially if you have specific accessibility needs,
+        dietary requirements, or are travelling far, please check directly with the restaurant.
+      </p>
+      <p>
+        Restaurant ratings and review counts shown on the site are sourced from publicly
+        available data (such as Google) at the time of import and are not updated in real time.
+      </p>
+      <p>
+        Family Friendly UK is not liable for any loss, inconvenience, or disappointment caused
+        by inaccurate or out-of-date listing information. Use the site as a starting point, not
+        a guarantee.
+      </p>
+
+      <h2>Acceptable use</h2>
+      <p>When using the site, you agree not to:</p>
+      <ul>
+        <li>Use the site for any unlawful purpose</li>
+        <li>Submit false or misleading restaurant suggestions</li>
+        <li>Attempt to scrape, copy, or republish the site or its data without permission</li>
+        <li>Interfere with the operation of the site or its security</li>
+        <li>Submit spam or other unwanted content through any of our forms</li>
+      </ul>
+
+      <h2>User submissions</h2>
+      <p>
+        When you submit a restaurant suggestion, write to us, or send any other content through
+        the site, you grant us permission to review, edit, and (where appropriate) publish it.
+        Don't submit anything you don't have the right to share.
+      </p>
+
+      <h2>Linked sites</h2>
+      <p>
+        The site contains links to third-party websites including restaurant websites and
+        booking platforms. We don't control those sites and aren't responsible for their
+        content, terms, or privacy practices.
+      </p>
+
+      <h2>Intellectual property</h2>
+      <p>
+        The Family Friendly UK name, logo, descriptive text, and the site's design are owned by
+        us. You may share short snippets and links to listings for personal, non-commercial
+        purposes; please ask before reproducing larger portions of the site.
+      </p>
+      <p>
+        Restaurant names, logos, and trade marks belong to their respective owners. Restaurant
+        photographs, where shown, are credited to their original sources.
+      </p>
+
+      <h2>Limitation of liability</h2>
+      <p>
+        The site is provided "as is", with no warranties of any kind. To the fullest extent
+        permitted by law, Family Friendly UK is not liable for any indirect, incidental, or
+        consequential losses arising out of your use of the site. Nothing in these terms
+        excludes liability that cannot lawfully be excluded under English law (such as
+        liability for personal injury caused by negligence).
+      </p>
+
+      <h2>Privacy</h2>
+      <p>
+        Our handling of personal data is described in our <a href="/privacy">Privacy Policy</a>.
+      </p>
+
+      <h2>Changes to these terms</h2>
+      <p>
+        We may update these terms from time to time. The "Last updated" date above tells you
+        when they were last changed. Continued use of the site after a change means you accept
+        the new terms.
+      </p>
+
+      <h2>Governing law</h2>
+      <p>
+        These terms are governed by the laws of England and Wales. Any dispute will be subject
+        to the non-exclusive jurisdiction of the English courts.
+      </p>
+
+      <h2>Contact</h2>
+      <p>
+        Questions about these terms? Get in touch through the <a href="/suggest">contact form</a>.
+      </p>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+.legal-prose {
+  max-width: 760px;
+  font-size: 1rem;
+  line-height: 1.75;
+  color: var(--text);
+  padding: 24px 24px 64px;
+}
+.legal-prose h2 {
+  font-family: var(--font-serif);
+  font-size: 1.4rem;
+  color: var(--green);
+  margin: 36px 0 12px;
+}
+.legal-prose p { margin-bottom: 14px; color: var(--text-muted); }
+.legal-prose ul {
+  margin: 4px 0 18px 0;
+  padding-left: 20px;
+  color: var(--text-muted);
+}
+.legal-prose li { margin-bottom: 8px; }
+.legal-prose a { color: var(--green); text-decoration: underline; }
+.legal-prose a:hover { color: var(--terracotta); }
+</style>
