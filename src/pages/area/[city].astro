@@ -2,6 +2,7 @@
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import RestaurantCard from '../../components/RestaurantCard.astro';
 import EmailCapture from '../../components/EmailCapture.astro';
+import CityMap from '../../components/CityMap.tsx';
 import { restaurants, getAreaStats } from '../../data/restaurants';
 
 export async function getStaticPaths() {
@@ -20,14 +21,13 @@ if (!stat) {
 const areaRestaurants = restaurants.filter(r => r.areaSlug === city);
 const areaName = stat.name;
 const cityName = stat.citySlug === 'london' ? 'London' : areaName;
-const parentCitySlug = stat.citySlug;
 
 const schema = {
   "@context": "https://schema.org",
   "@type": "BreadcrumbList",
   "itemListElement": [
     { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://familyfriendlyuk.co.uk" },
-    { "@type": "ListItem", "position": 2, "name": "Regions", "item": "https://familyfriendlyuk.co.uk/regions" },
+    { "@type": "ListItem", "position": 2, "name": "Browse Cities", "item": "https://familyfriendlyuk.co.uk/regions" },
     { "@type": "ListItem", "position": 3, "name": `Family Friendly Restaurants in ${areaName}`, "item": `https://familyfriendlyuk.co.uk/area/${city}` }
   ]
 };
@@ -43,7 +43,7 @@ const schema = {
       <nav class="breadcrumb" aria-label="Breadcrumb">
         <a href="/">Home</a>
         <span class="sep" aria-hidden="true">›</span>
-        <a href="/regions">Regions</a>
+        <a href="/regions">Browse cities</a>
         <span class="sep" aria-hidden="true">›</span>
         <span aria-current="page">{areaName}</span>
       </nav>
@@ -59,18 +59,32 @@ const schema = {
     <div class="container">
       {areaRestaurants.length > 0 ? (
         <>
-          <div class="area-intro">
-            <p>
-              Showing all {areaRestaurants.length} family-friendly restaurants in <strong>{areaName}</strong>.
-              Use the filters on the <a href="/">interactive map</a> to narrow down by what matters to you.
-            </p>
+          <div class="city-map-section">
+            <CityMap areaSlug={city} areaName={areaName} client:load />
           </div>
 
-          <div class="grid-3 listings-grid">
+          <div class="grid-3 listings-grid" id="city-listings">
             {areaRestaurants.map(r => (
-              <RestaurantCard restaurant={r} />
+              <div
+                class="listing-wrapper"
+                data-kids-menu={r.kidsMenu}
+                data-highchairs={r.highchairs}
+                data-buggy={r.buggyAccessible}
+                data-soft-play={r.softPlay}
+                data-outdoor={r.outdoorSpace}
+                data-baby-changing={r.babyChanging}
+                data-vegan={r.veganOptions}
+                data-gluten-free={r.glutenFreeOptions}
+                data-halal={r.halalOptions}
+              >
+                <RestaurantCard restaurant={r} />
+              </div>
             ))}
           </div>
+
+          <p class="listings-empty" id="listings-empty" hidden>
+            No restaurants in {areaName} match those filters. Try removing one or two.
+          </p>
         </>
       ) : (
         <div class="empty-state">
@@ -98,18 +112,47 @@ const schema = {
   </section>
 </BaseLayout>
 
+<script>
+  const FILTER_TO_DATA: Record<string, string> = {
+    kidsMenu: 'kidsMenu',
+    highchairs: 'highchairs',
+    buggyFriendly: 'buggy',
+    softPlay: 'softPlay',
+    outdoorSpace: 'outdoor',
+    babyChanging: 'babyChanging',
+    vegan: 'vegan',
+    glutenFree: 'glutenFree',
+    halal: 'halal',
+  };
+
+  window.addEventListener('ffuk-city-filters', ((e: CustomEvent) => {
+    const filters = e.detail as Record<string, boolean>;
+    const wrappers = document.querySelectorAll<HTMLElement>('#city-listings .listing-wrapper');
+    let visibleCount = 0;
+    wrappers.forEach(el => {
+      const matches = Object.entries(filters).every(([key, on]) => {
+        if (!on) return true;
+        const dataKey = FILTER_TO_DATA[key];
+        if (!dataKey) return true;
+        return el.dataset[dataKey] === 'yes';
+      });
+      el.style.display = matches ? '' : 'none';
+      if (matches) visibleCount++;
+    });
+    const empty = document.getElementById('listings-empty');
+    if (empty) (empty as HTMLElement).hidden = visibleCount > 0;
+  }) as EventListener);
+</script>
+
 <style>
-.area-intro {
-  padding: 16px 20px;
-  background: var(--green-pale);
-  border-radius: var(--radius-sm);
-  font-size: 0.9375rem;
+.city-map-section { margin-bottom: 36px; }
+.listings-grid { margin-bottom: 24px; }
+.listings-empty {
+  text-align: center;
+  padding: 48px 24px;
   color: var(--text-muted);
-  margin-bottom: 32px;
+  font-size: 1rem;
 }
-.area-intro strong { color: var(--green); }
-.area-intro a { color: var(--green); text-decoration: underline; }
-.listings-grid { margin-bottom: 48px; }
 .empty-state {
   text-align: center;
   padding: 64px 24px;
