@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
+import { locateUser, geocodePostcode, looksLikeUkPostcode } from '../lib/locate';
 
 interface Filters {
   kidsMenu: boolean;
@@ -115,6 +116,10 @@ export default function HomeSearchMap({ totalCount }: { totalCount: number }) {
   const [highlightIdx, setHighlightIdx] = useState(0);
   const [activeCount, setActiveCount] = useState(totalCount);
   const [locating, setLocating] = useState(false);
+  const [locateError, setLocateError] = useState<string | null>(null);
+  const [postcode, setPostcode] = useState('');
+  const [postcodeError, setPostcodeError] = useState<string | null>(null);
+  const [postcodeBusy, setPostcodeBusy] = useState(false);
   const [dataReady, setDataReady] = useState(false);
 
   // Suggestions for the typeahead dropdown
@@ -314,18 +319,37 @@ export default function HomeSearchMap({ totalCount }: { totalCount: number }) {
   const activeFilterCount = Object.values(filters).filter(v => v).length;
   const hasAnyControl = activeFilterCount > 0;
 
-  const handleNearMe = () => {
-    if (!navigator.geolocation) return;
+  const handleNearMe = async () => {
     setLocating(true);
-    navigator.geolocation.getCurrentPosition(
-      pos => {
-        const { latitude, longitude } = pos.coords;
-        mapRef.current?.flyTo({ center: [longitude, latitude], zoom: 13, essential: true });
-        setLocating(false);
-      },
-      () => { setLocating(false); alert('Could not get your location. Please allow location access.'); },
-      { timeout: 10000 }
-    );
+    setLocateError(null);
+    const result = await locateUser();
+    setLocating(false);
+    if (result.kind === 'success') {
+      mapRef.current?.flyTo({ center: [result.lng, result.lat], zoom: 13, essential: true });
+    } else if (result.kind === 'blocked') {
+      setLocateError('Browser blocked location — try entering your postcode instead.');
+    } else {
+      setLocateError("Couldn't get a location fix. Try entering your postcode.");
+    }
+  };
+
+  const handlePostcodeSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setPostcodeError(null);
+    const value = postcode.trim();
+    if (!value) return;
+    if (!looksLikeUkPostcode(value)) {
+      setPostcodeError("That doesn't look like a UK postcode.");
+      return;
+    }
+    setPostcodeBusy(true);
+    const hit = await geocodePostcode(value, TOKEN);
+    setPostcodeBusy(false);
+    if (!hit) {
+      setPostcodeError("Couldn't find that postcode.");
+      return;
+    }
+    mapRef.current?.flyTo({ center: [hit.lng, hit.lat], zoom: 13, essential: true });
   };
 
   if (!TOKEN) {
@@ -408,10 +432,34 @@ export default function HomeSearchMap({ totalCount }: { totalCount: number }) {
         >
           {locating ? '⌛ Finding you…' : '📍 Near me'}
         </button>
+
+        <form className="hsm-postcode" onSubmit={handlePostcodeSubmit}>
+          <label htmlFor="hsm-postcode-input" className="hsm-postcode-label">Or enter your postcode</label>
+          <input
+            id="hsm-postcode-input"
+            type="text"
+            inputMode="text"
+            autoComplete="postal-code"
+            placeholder="e.g. SW4 0JU"
+            value={postcode}
+            onChange={e => { setPostcode(e.target.value); setPostcodeError(null); }}
+            className="hsm-postcode-input"
+          />
+          <button type="submit" className="hsm-btn" disabled={postcodeBusy}>
+            {postcodeBusy ? 'Finding…' : 'Go'}
+          </button>
+        </form>
+
         <span className="hsm-map-count">
           {dataReady ? `${activeCount.toLocaleString()} restaurant${activeCount !== 1 ? 's' : ''}` : 'Loading…'}
         </span>
       </div>
+
+      {(locateError || postcodeError) && (
+        <div className="hsm-locate-error" role="status">
+          {locateError || postcodeError}
+        </div>
+      )}
 
       <div ref={mapContainer} className="hsm-map" />
 
@@ -561,6 +609,35 @@ export default function HomeSearchMap({ totalCount }: { totalCount: number }) {
         .hsm-btn--near-me:hover { background: #3d6b1e; }
         .hsm-btn:disabled { opacity: 0.6; cursor: default; }
         .hsm-map-count { font-size: 0.875rem; color: #6b6457; }
+        .hsm-postcode {
+          display: inline-flex;
+          align-items: center;
+          gap: 8px;
+        }
+        .hsm-postcode-label {
+          font-size: 0.8125rem;
+          color: #6b6457;
+        }
+        .hsm-postcode-input {
+          padding: 8px 10px;
+          border: 1.5px solid #e8e2d9;
+          border-radius: 6px;
+          font-size: 0.875rem;
+          background: white;
+          color: #1A1A1A;
+          width: 7.5em;
+          font-family: inherit;
+          text-transform: uppercase;
+        }
+        .hsm-postcode-input:focus { outline: none; border-color: #2D5016; }
+        .hsm-locate-error {
+          padding: 8px 12px;
+          background: #fdf0e8;
+          border: 1px solid #C4622D;
+          border-radius: 6px;
+          color: #1A1A1A;
+          font-size: 0.875rem;
+        }
         .hsm-map {
           height: 520px;
           border-radius: 12px;

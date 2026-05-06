@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
+import { locateUser, geocodePostcode, looksLikeUkPostcode } from '../lib/locate';
 
 interface Filters {
   kidsMenu: boolean;
@@ -71,6 +72,10 @@ export default function CityMap({ areaSlug, areaName }: { areaSlug: string; area
   const [filters, setFilters] = useState<Filters>(DEFAULT_FILTERS);
   const [activeCount, setActiveCount] = useState(0);
   const [locating, setLocating] = useState(false);
+  const [locateError, setLocateError] = useState<string | null>(null);
+  const [postcode, setPostcode] = useState('');
+  const [postcodeError, setPostcodeError] = useState<string | null>(null);
+  const [postcodeBusy, setPostcodeBusy] = useState(false);
   const [dataReady, setDataReady] = useState(false);
 
   useEffect(() => {
@@ -220,18 +225,37 @@ export default function CityMap({ areaSlug, areaName }: { areaSlug: string; area
     window.dispatchEvent(new CustomEvent('ffuk-city-filters', { detail: filters }));
   }, [filters, dataReady]);
 
-  const handleNearMe = () => {
-    if (!navigator.geolocation) return;
+  const handleNearMe = async () => {
     setLocating(true);
-    navigator.geolocation.getCurrentPosition(
-      pos => {
-        const { latitude, longitude } = pos.coords;
-        mapRef.current?.flyTo({ center: [longitude, latitude], zoom: 13, essential: true });
-        setLocating(false);
-      },
-      () => { setLocating(false); alert('Could not get your location. Please allow location access.'); },
-      { timeout: 10000 }
-    );
+    setLocateError(null);
+    const result = await locateUser();
+    setLocating(false);
+    if (result.kind === 'success') {
+      mapRef.current?.flyTo({ center: [result.lng, result.lat], zoom: 13, essential: true });
+    } else if (result.kind === 'blocked') {
+      setLocateError('Browser blocked location — try entering your postcode instead.');
+    } else {
+      setLocateError("Couldn't get a location fix. Try entering your postcode.");
+    }
+  };
+
+  const handlePostcodeSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setPostcodeError(null);
+    const value = postcode.trim();
+    if (!value) return;
+    if (!looksLikeUkPostcode(value)) {
+      setPostcodeError("That doesn't look like a UK postcode.");
+      return;
+    }
+    setPostcodeBusy(true);
+    const hit = await geocodePostcode(value, TOKEN);
+    setPostcodeBusy(false);
+    if (!hit) {
+      setPostcodeError("Couldn't find that postcode.");
+      return;
+    }
+    mapRef.current?.flyTo({ center: [hit.lng, hit.lat], zoom: 13, essential: true });
   };
 
   const updateFilter = (key: keyof Filters, value: boolean) => {
@@ -281,10 +305,34 @@ export default function CityMap({ areaSlug, areaName }: { areaSlug: string; area
         >
           {locating ? '⌛ Finding you…' : '📍 Near me'}
         </button>
+
+        <form className="cm-postcode" onSubmit={handlePostcodeSubmit}>
+          <label htmlFor="cm-postcode-input" className="cm-postcode-label">Or enter your postcode</label>
+          <input
+            id="cm-postcode-input"
+            type="text"
+            inputMode="text"
+            autoComplete="postal-code"
+            placeholder="e.g. SW4 0JU"
+            value={postcode}
+            onChange={e => { setPostcode(e.target.value); setPostcodeError(null); }}
+            className="cm-postcode-input"
+          />
+          <button type="submit" className="cm-btn" disabled={postcodeBusy}>
+            {postcodeBusy ? 'Finding…' : 'Go'}
+          </button>
+        </form>
+
         <span className="cm-map-count">
           {dataReady ? `${activeCount.toLocaleString()} restaurant${activeCount !== 1 ? 's' : ''} in ${areaName}` : 'Loading…'}
         </span>
       </div>
+
+      {(locateError || postcodeError) && (
+        <div className="cm-locate-error" role="status">
+          {locateError || postcodeError}
+        </div>
+      )}
 
       <div ref={mapContainer} className="cm-map" />
 
@@ -354,6 +402,35 @@ export default function CityMap({ areaSlug, areaName }: { areaSlug: string; area
         .cm-btn--near-me:hover { background: #3d6b1e; }
         .cm-btn:disabled { opacity: 0.6; cursor: default; }
         .cm-map-count { font-size: 0.875rem; color: #6b6457; }
+        .cm-postcode {
+          display: inline-flex;
+          align-items: center;
+          gap: 8px;
+        }
+        .cm-postcode-label {
+          font-size: 0.8125rem;
+          color: #6b6457;
+        }
+        .cm-postcode-input {
+          padding: 8px 10px;
+          border: 1.5px solid #e8e2d9;
+          border-radius: 6px;
+          font-size: 0.875rem;
+          background: white;
+          color: #1A1A1A;
+          width: 7.5em;
+          font-family: inherit;
+          text-transform: uppercase;
+        }
+        .cm-postcode-input:focus { outline: none; border-color: #2D5016; }
+        .cm-locate-error {
+          padding: 8px 12px;
+          background: #fdf0e8;
+          border: 1px solid #C4622D;
+          border-radius: 6px;
+          color: #1A1A1A;
+          font-size: 0.875rem;
+        }
         .cm-map {
           height: 460px;
           border-radius: 12px;
