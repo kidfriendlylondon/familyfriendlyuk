@@ -18,7 +18,15 @@ if (!stat) {
   return Astro.redirect('/regions');
 }
 
-const areaRestaurants = restaurants.filter(r => r.areaSlug === city);
+// Quality bar: every listing must have at least 2 confirmed family-friendly
+// features ("yes", not "likely"). This drops entries where everything is
+// uncertain — the city page promise is confidence, not maybe-this-maybe-that.
+const FAMILY_FEATURES = ['kidsMenu', 'highchairs', 'outdoorSpace', 'buggyAccessible', 'softPlay', 'babyChanging'] as const;
+const allAreaListings = restaurants.filter(r => r.areaSlug === city);
+const areaRestaurants = allAreaListings.filter(r =>
+  FAMILY_FEATURES.reduce((n, k) => n + (r[k] === 'yes' ? 1 : 0), 0) >= 2
+);
+const hiddenLowConfidenceCount = allAreaListings.length - areaRestaurants.length;
 const areaName = stat.name;
 const cityName = stat.citySlug === 'london' ? 'London' : areaName;
 
