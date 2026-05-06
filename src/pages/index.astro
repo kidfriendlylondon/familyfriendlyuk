@@ -41,10 +41,6 @@ const schema = {
           kids menus, buggy access, soft play and more — wherever you are.
         </p>
       </div>
-
-      <div class="hero-email">
-        <EmailCapture variant="hero" />
-      </div>
     </div>
   </section>
 
@@ -72,6 +68,13 @@ const schema = {
           Browse cities
         </a>
       </div>
+    </div>
+  </section>
+
+  <!-- Free guide email capture -->
+  <section class="guide-section">
+    <div class="container">
+      <EmailCapture variant="hero" />
     </div>
   </section>
 
@@ -143,12 +146,6 @@ const schema = {
     </div>
   </section>
 
-  <!-- Email capture -->
-  <section style="padding:0 0 64px">
-    <div class="container">
-      <EmailCapture />
-    </div>
-  </section>
 </BaseLayout>
 
 <style>
@@ -175,7 +172,6 @@ const schema = {
   line-height: 1.7;
   max-width: 640px;
 }
-.hero-email { padding-top: 8px; }
 
 /* Search + map */
 .search-map-section {
@@ -185,6 +181,9 @@ const schema = {
 
 /* Featured */
 .featured-section { background: var(--cream); }
+
+/* Free guide email capture */
+.guide-section { background: var(--white); }
 
 /* Areas */
 .areas-section { background: var(--white); }
