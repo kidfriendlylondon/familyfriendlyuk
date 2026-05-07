@@ -5,7 +5,7 @@ import FeaturedCarousel from '../components/FeaturedCarousel.tsx';
 import EmailCapture from '../components/EmailCapture.astro';
 import { restaurants, getFeaturedRestaurants, getAreaStats } from '../data/restaurants';
 
-const featured = getFeaturedRestaurants();
+const featured = getFeaturedRestaurants(8);
 const areaStats = getAreaStats();
 const topAreas = Object.entries(areaStats)
   .sort((a, b) => b[1].count - a[1].count)
