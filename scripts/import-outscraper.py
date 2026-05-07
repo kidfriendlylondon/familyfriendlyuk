@@ -35,6 +35,8 @@ INPUT_FILES = [
 ]
 
 # Substring tests against `type` (case-insensitive). If any matches, the venue qualifies.
+# Types that qualify outright as food venues — anything containing one of
+# these substrings (case-insensitive) is in unless the EXCLUSION list rejects.
 QUALIFYING_TYPE_SUBSTRINGS = [
     'restaurant', 'cafe', 'café', 'coffee shop', 'pub', 'gastropub', 'bistro',
     'brasserie', 'bakery', 'pizza', 'burger', 'sandwich', 'fish and chips',
@@ -43,19 +45,62 @@ QUALIFYING_TYPE_SUBSTRINGS = [
     'food court', 'food hall', 'gelato', 'creperie', 'crêperie', 'noodle',
     'sushi', 'tapas', 'steakhouse', 'steak house', 'roastery', 'patisserie',
     'pâtisserie', 'pie shop', 'chippy', 'fish bar', 'grill house',
+    # Family-relevant categories explicitly added — children's cafes, family
+    # restaurants, and play cafes are food venues by definition.
+    "children's cafe", "children's café", 'family restaurant',
+    'play cafe', 'play café',
+]
+
+# Family-relevant categories that *might* be food venues but aren't always.
+# These only qualify if there's evidence the venue serves food (see
+# `has_food_service_evidence`).
+CONDITIONAL_TYPE_SUBSTRINGS = [
+    'indoor playground',
+    "children's amusement centre",
+    "children's amusement center",
+    'amusement centre',  # plain "Amusement Centre" can be a children's play place
+    'amusement center',
+    'soft play centre',
+    'soft play center',
+    'soft play',
+    'wacky warehouse',
 ]
 
 # If the venue's type matches one of these (case-insensitive substring),
-# REJECT regardless of the qualifying list — guards against e.g. "Cocktail bar"
-# matching "bar" in unrelated types we haven't anticipated.
+# REJECT regardless of any qualifying match — guards against e.g.
+# "Cocktail bar" matching "bar" or "Amusement park" matching "amusement".
 EXCLUSION_TYPE_SUBSTRINGS = [
     'hotel', 'bed & breakfast', 'b&b', 'museum', 'attraction',
-    'amusement', 'nightclub', 'event venue', 'caterer', 'catering',
+    'amusement park', 'theme park', 'amusement park ride',
+    'nightclub', 'event venue', 'caterer', 'catering',
     'food manufacturer', 'wholesale', 'distributor', 'butcher', 'fishmonger',
     'grocery', 'supermarket', 'convenience store', 'newsagent', 'florist',
     'church', 'school', 'university', 'college', 'gym', 'spa', 'salon',
     'barber', 'wedding venue',
 ]
+
+
+def has_food_service_evidence(about: dict, type_str: str, subtypes: str, description: str) -> bool:
+    """Return True when there's clear evidence a play-place also serves food."""
+    food_words = ['cafe', 'café', 'food', 'menu', 'kitchen', 'restaurant',
+                  'eatery', 'snacks', 'lunch', 'breakfast', 'brunch', 'pizza',
+                  'sandwich', 'meal']
+    blob = ' '.join([type_str or '', subtypes or '', description or '']).lower()
+    if any(w in blob for w in food_words):
+        return True
+    # Google's "about" object exposes service / offering signals.
+    service = (about or {}).get('Service options') or {}
+    if service.get('Dine-in') is True or service.get('Takeaway') is True:
+        return True
+    offerings = (about or {}).get('Offerings') or {}
+    food_offerings = ['Coffee', 'Healthy options', 'Quick bite', 'Small plates',
+                      'Vegetarian options', 'Vegan options', 'Late-night food']
+    if any(offerings.get(k) is True for k in food_offerings):
+        return True
+    dining = (about or {}).get('Dining options') or {}
+    if any(dining.get(k) is True for k in ['Lunch', 'Dinner', 'Brunch', 'Breakfast', 'Dessert']):
+        return True
+    return False
 
 
 def slugify(s: str) -> str:
@@ -91,14 +136,19 @@ def parse_existing_slugs(ts_path: Path) -> Set[str]:
     return set(re.findall(r'slug:\s*"([^"]+)"', text))
 
 
-def qualifies(type_str: str) -> bool:
+def qualifies(type_str: str, about: Optional[dict] = None,
+              subtypes: str = '', description: str = '') -> bool:
     if not type_str:
         return False
     t = type_str.lower()
     for ex in EXCLUSION_TYPE_SUBSTRINGS:
         if ex in t:
             return False
-    return any(q in t for q in QUALIFYING_TYPE_SUBSTRINGS)
+    if any(q in t for q in QUALIFYING_TYPE_SUBSTRINGS):
+        return True
+    if any(q in t for q in CONDITIONAL_TYPE_SUBSTRINGS):
+        return has_food_service_evidence(about or {}, type_str, subtypes, description)
+    return False
 
 
 def parse_about(about_str) -> dict:
@@ -516,7 +566,10 @@ def process_file(path: Path, existing_keys: Set[Tuple[str, str]],
             continue
 
         type_str = row[idx['type']] or ''
-        if not qualifies(type_str):
+        about_for_qualify = parse_about(row[idx['about']] if 'about' in idx else '')
+        subtypes_for_qualify = row[idx['subtypes']] or ''
+        desc_for_qualify = row[idx['description']] if 'description' in idx else ''
+        if not qualifies(type_str, about_for_qualify, subtypes_for_qualify, desc_for_qualify or ''):
             stats['wrong_type'] += 1
             continue
 
