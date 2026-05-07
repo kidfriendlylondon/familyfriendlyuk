@@ -313,3 +313,133 @@ section { padding: 64px 0; }
   border: 0;
 }
 .no-scroll { overflow: hidden; }
+
+/* ============================================================
+   Restaurant detail page
+   ============================================================ */
+.listing-hero-photo {
+  width: 100%;
+  height: 400px;
+  object-fit: cover;
+  display: block;
+}
+.listing-hero-placeholder {
+  width: 100%;
+  height: 300px;
+  background: var(--green-pale);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 5rem;
+  color: var(--green);
+}
+.listing-detail { padding: 0 0 4rem; }
+.listing-detail__grid {
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  gap: 2.5rem;
+  align-items: start;
+  padding-top: 2.5rem;
+}
+@media (max-width: 900px) {
+  .listing-detail__grid { grid-template-columns: 1fr; gap: 1.5rem; }
+}
+.listing-detail__photos {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+  margin-bottom: 2rem;
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+.listing-detail__section { margin-bottom: 2rem; }
+.listing-detail__section h2 {
+  font-family: var(--font-serif);
+  font-size: 1.25rem;
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid var(--border);
+  color: var(--text);
+}
+
+.attribute-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 0.75rem;
+}
+.attribute-item {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.75rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  font-size: 0.875rem;
+  background: var(--white);
+}
+.attribute-item__icon { font-size: 1.1rem; flex-shrink: 0; }
+.attribute-item__label { color: var(--text-muted); font-size: 0.75rem; display: block; }
+.attribute-item__value { font-weight: 600; font-size: 0.875rem; }
+.attribute-item--yes { background: #F0F7E8; border-color: #C5DEAB; }
+.attribute-item--no { background: #FEF2F2; border-color: #FECACA; }
+.attribute-item--likely { background: #FFFBEB; border-color: #FDE68A; }
+
+.attr-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+  font-size: 0.78rem;
+  font-weight: 500;
+  padding: 0.25rem 0.65rem;
+  border-radius: 999px;
+  background: var(--green);
+  color: #fff;
+}
+.attribute-tags { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+
+.listing-sidebar { position: sticky; top: 84px; }
+@media (max-width: 900px) { .listing-sidebar { position: static; } }
+.sidebar-card {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  box-shadow: var(--card-shadow);
+}
+.sidebar-card h3 {
+  font-family: var(--font-serif);
+  font-size: 1rem;
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--border);
+  color: var(--text);
+}
+.hours-table { width: 100%; font-size: 0.875rem; border-collapse: collapse; }
+.hours-table td { padding: 0.3rem 0; }
+.hours-table td:first-child { color: var(--text-muted); width: 38%; }
+.hours-table td:last-child { font-weight: 500; }
+.map-embed {
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  border: 1px solid var(--border);
+}
+.booking-btn {
+  width: 100%;
+  justify-content: center;
+  font-size: 1rem;
+  padding: 0.75rem 1.5rem;
+  margin-bottom: 0.75rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  border-radius: var(--radius-sm);
+  text-decoration: none;
+  font-weight: 600;
+  font-family: inherit;
+}
+
+.rating { display: inline-flex; align-items: center; gap: 0.3rem; font-size: 0.95rem; color: var(--text-muted); }
+.rating__star { color: #D97706; font-size: 1.05em; }
+.rating__count { font-size: 0.85rem; }
+.price-range { font-size: 0.95rem; font-weight: 600; color: var(--text-muted); }
