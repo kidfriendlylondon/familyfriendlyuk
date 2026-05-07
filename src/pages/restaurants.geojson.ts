@@ -16,6 +16,7 @@ export function GET() {
       priceRange: r.priceRange,
       googleRating: r.googleRating,
       featured: r.featured,
+      thumbnail: r.photos[0] ?? null,
       kidsMenu: r.kidsMenu === 'yes' ? 1 : 0,
       highchairs: r.highchairs === 'yes' ? 1 : 0,
       buggyAccessible: r.buggyAccessible === 'yes' ? 1 : 0,

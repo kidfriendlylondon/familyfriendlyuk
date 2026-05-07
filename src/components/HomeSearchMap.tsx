@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import { locateUser, geocodePostcode, looksLikeUkPostcode } from '../lib/locate';
+import { buildMarkerPopupHtml } from '../lib/popup';
 
 interface Filters {
   kidsMenu: boolean;
@@ -229,17 +230,9 @@ export default function HomeSearchMap({ totalCount }: { totalCount: number }) {
           const coords = (f.geometry as any).coordinates.slice() as [number, number];
           const p = f.properties as any;
           if (popupRef.current) popupRef.current.remove();
-          popupRef.current = new mapboxgl.Popup({ offset: 12, maxWidth: '260px' })
+          popupRef.current = new mapboxgl.Popup({ offset: 12, maxWidth: '280px' })
             .setLngLat(coords)
-            .setHTML(`
-              <div class="map-popup">
-                <div style="font-size:0.75rem;color:#C4622D;font-weight:500;margin-bottom:4px">${escapeHtml(p.cuisineType ?? '')}</div>
-                <h4 style="font-family:Georgia,serif;font-size:1rem;margin-bottom:6px;color:#1A1A1A">${escapeHtml(p.name ?? '')}</h4>
-                <p style="font-size:0.8125rem;color:#6b6457;margin-bottom:4px">${escapeHtml(p.area ?? '')} · ${escapeHtml(p.priceRange ?? '')}</p>
-                <p style="font-size:0.8125rem;color:#6b6457;margin-bottom:10px">⭐ ${p.googleRating ?? ''}</p>
-                <a href="/restaurants/${encodeURIComponent(p.slug)}" style="font-size:0.875rem;font-weight:500;color:#2D5016">View listing →</a>
-              </div>
-            `)
+            .setHTML(buildMarkerPopupHtml(p))
             .addTo(map);
         });
 
