@@ -398,7 +398,9 @@ section { padding: 64px 0; }
 .attribute-tags { display: flex; flex-wrap: wrap; gap: 0.4rem; }
 
 .listing-sidebar { position: sticky; top: 84px; }
-@media (max-width: 900px) { .listing-sidebar { position: static; } }
+/* On tablets and phones the sticky sidebar gets in the user's way as
+   they scroll the long card grid — disable below 1024px. */
+@media (max-width: 1024px) { .listing-sidebar { position: static; top: auto; } }
 .sidebar-card {
   background: var(--white);
   border: 1px solid var(--border);
