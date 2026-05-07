@@ -330,12 +330,23 @@ const bestForLabel = r.bestForAgeRange.length
           {/* Map */}
           {r.lat && r.lng && (
             <div class="sidebar-card">
-              <h3>Location</h3>
+              <h3>Get there</h3>
+              <a
+                href="#"
+                class="btn btn-secondary booking-btn directions-btn"
+                data-address={`${r.address}, ${r.postcode}`}
+                data-lat={r.lat}
+                data-lng={r.lng}
+                data-name={r.name}
+              >
+                🧭 Get directions
+              </a>
               <a
                 href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(r.name + ' ' + r.address)}`}
                 class="btn btn-secondary booking-btn"
                 target="_blank"
                 rel="noopener"
+                style="margin-top:8px"
               >
                 Open in Google Maps →
               </a>
@@ -345,4 +356,24 @@ const bestForLabel = r.bestForAgeRange.length
       </div>
     </div>
   </div>
+
+  <script>
+    // Native maps app on iOS, Google Maps elsewhere — both apps will then
+    // prompt their own apps if installed. We pass coords (most accurate)
+    // plus name/address as the destination text.
+    document.querySelectorAll<HTMLAnchorElement>('.directions-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        const address = btn.dataset.address ?? '';
+        const lat = btn.dataset.lat;
+        const lng = btn.dataset.lng;
+        const name = btn.dataset.name ?? '';
+        const isApple = /iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent);
+        const url = isApple
+          ? `https://maps.apple.com/?q=${encodeURIComponent(name + ', ' + address)}&ll=${lat},${lng}`
+          : `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(address)}&destination_place_id=`;
+        window.open(url, '_blank', 'noopener');
+      });
+    });
+  </script>
 </BaseLayout>
