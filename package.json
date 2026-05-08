@@ -2,6 +2,9 @@
   "name": "familyfriendlyuk",
   "type": "module",
   "version": "1.0.0",
+  "engines": {
+    "node": "20.x"
+  },
   "scripts": {
     "dev": "astro dev",
     "build": "astro build",
