@@ -5,14 +5,25 @@ import RestaurantCard from '../../components/RestaurantCard.astro';
 import EmailCapture from '../../components/EmailCapture.astro';
 import { restaurants, getNearby } from '../../data/restaurants';
 
-export async function getStaticPaths() {
-  return restaurants.map(r => ({ params: { slug: r.slug } }));
-}
+// SSR + ISR. Pre-rendering 35k+ static pages was timing out the
+// Vercel build; this route is now rendered on-demand at the edge and
+// cached for 1 hour (configured via the Vercel adapter's `isr`
+// option in astro.config.mjs).
+export const prerender = false;
 
 const { slug } = Astro.params as { slug: string };
 const r = restaurants.find(x => x.slug === slug);
 
-if (!r) return Astro.redirect('/regions');
+if (!r) {
+  return new Response('Restaurant not found', { status: 404 });
+}
+
+// Tell Vercel's edge to cache this rendered page for 1 hour, with up
+// to a day of stale-while-revalidate so users never wait on a refresh.
+Astro.response.headers.set(
+  'Cache-Control',
+  'public, max-age=0, s-maxage=3600, stale-while-revalidate=86400'
+);
 
 const nearby = getNearby(r.lat, r.lng, 3, r.slug);
 const days = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];

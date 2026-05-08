@@ -23,3 +23,6 @@ pnpm-debug.log*
 
 # jetbrains ide
 .idea/
+
+# Vercel adapter output (built locally)
+.vercel/
