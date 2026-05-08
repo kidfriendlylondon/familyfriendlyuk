@@ -100,7 +100,17 @@ export default function CityMap({ areaSlug, areaName }: { areaSlug: string; area
       try {
         const res = await fetch(DATA_URL);
         const fc: FeatureCollection = await res.json();
-        const cityFeatures = fc.features.filter(f => f.properties.areaSlug === areaSlug);
+        // Mirror the quality bar enforced by /area/[city].astro: hide
+        // restaurants where none of (kids menu, highchairs, buggy
+        // access) is a confirmed "yes". That keeps the map's pins and
+        // count text in sync with the cards rendered below the map.
+        const cityFeatures = fc.features
+          .filter(f => f.properties.areaSlug === areaSlug)
+          .filter(f =>
+            f.properties.kidsMenu === 1 ||
+            f.properties.highchairs === 1 ||
+            f.properties.buggyAccessible === 1
+          );
         cityFeaturesRef.current = cityFeatures;
 
         const cityFc: FeatureCollection = { type: 'FeatureCollection', features: cityFeatures };
