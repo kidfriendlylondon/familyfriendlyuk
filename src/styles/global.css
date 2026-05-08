@@ -445,3 +445,13 @@ section { padding: 64px 0; }
 .rating__star { color: #D97706; font-size: 1.05em; }
 .rating__count { font-size: 0.85rem; }
 .price-range { font-size: 0.95rem; font-weight: 600; color: var(--text-muted); }
+
+/* Blue dot used by both maps to show the user's "Near me" position */
+.map-user-dot {
+  width: 16px;
+  height: 16px;
+  background: #1E88E5;
+  border: 3px solid #fff;
+  border-radius: 50%;
+  box-shadow: 0 0 0 4px rgba(30, 136, 229, 0.25), 0 1px 6px rgba(0, 0, 0, 0.25);
+}

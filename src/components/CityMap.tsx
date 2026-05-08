@@ -69,6 +69,7 @@ export default function CityMap({ areaSlug, areaName }: { areaSlug: string; area
   const mapRef = useRef<mapboxgl.Map | null>(null);
   const cityFeaturesRef = useRef<Feature[] | null>(null);
   const popupRef = useRef<mapboxgl.Popup | null>(null);
+  const userMarkerRef = useRef<mapboxgl.Marker | null>(null);
 
   const [filters, setFilters] = useState<Filters>(DEFAULT_FILTERS);
   const [activeCount, setActiveCount] = useState(0);
@@ -218,12 +219,30 @@ export default function CityMap({ areaSlug, areaName }: { areaSlug: string; area
     window.dispatchEvent(new CustomEvent('ffuk-city-filters', { detail: filters }));
   }, [filters, dataReady]);
 
+  // Place (or move) a blue "you are here" dot on the map at the given
+  // coordinates. Reuses the same marker on subsequent calls.
+  const placeUserDot = (lng: number, lat: number) => {
+    const map = mapRef.current;
+    if (!map) return;
+    if (userMarkerRef.current) {
+      userMarkerRef.current.setLngLat([lng, lat]);
+    } else {
+      const dot = document.createElement('div');
+      dot.className = 'map-user-dot';
+      dot.setAttribute('aria-label', 'Your location');
+      userMarkerRef.current = new mapboxgl.Marker({ element: dot })
+        .setLngLat([lng, lat])
+        .addTo(map);
+    }
+  };
+
   const handleNearMe = async () => {
     setLocating(true);
     setLocateError(null);
     const result = await locateUser();
     setLocating(false);
     if (result.kind === 'success') {
+      placeUserDot(result.lng, result.lat);
       mapRef.current?.flyTo({ center: [result.lng, result.lat], zoom: 13, essential: true });
     } else if (result.kind === 'blocked') {
       setLocateError('Browser blocked location — try entering your postcode instead.');
@@ -248,6 +267,7 @@ export default function CityMap({ areaSlug, areaName }: { areaSlug: string; area
       setPostcodeError("Couldn't find that postcode.");
       return;
     }
+    placeUserDot(hit.lng, hit.lat);
     mapRef.current?.flyTo({ center: [hit.lng, hit.lat], zoom: 13, essential: true });
   };
 

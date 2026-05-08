@@ -108,6 +108,7 @@ export default function HomeSearchMap({ totalCount }: { totalCount: number }) {
   const mapRef = useRef<mapboxgl.Map | null>(null);
   const dataRef = useRef<FeatureCollection | null>(null);
   const popupRef = useRef<mapboxgl.Popup | null>(null);
+  const userMarkerRef = useRef<mapboxgl.Marker | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   const [filters, setFilters] = useState<Filters>(DEFAULT_FILTERS);
@@ -312,12 +313,30 @@ export default function HomeSearchMap({ totalCount }: { totalCount: number }) {
   const activeFilterCount = Object.values(filters).filter(v => v).length;
   const hasAnyControl = activeFilterCount > 0;
 
+  // Place (or move) a blue "you are here" dot on the map at the given
+  // coordinates. Reuses the same marker on subsequent calls.
+  const placeUserDot = (lng: number, lat: number) => {
+    const map = mapRef.current;
+    if (!map) return;
+    if (userMarkerRef.current) {
+      userMarkerRef.current.setLngLat([lng, lat]);
+    } else {
+      const dot = document.createElement('div');
+      dot.className = 'map-user-dot';
+      dot.setAttribute('aria-label', 'Your location');
+      userMarkerRef.current = new mapboxgl.Marker({ element: dot })
+        .setLngLat([lng, lat])
+        .addTo(map);
+    }
+  };
+
   const handleNearMe = async () => {
     setLocating(true);
     setLocateError(null);
     const result = await locateUser();
     setLocating(false);
     if (result.kind === 'success') {
+      placeUserDot(result.lng, result.lat);
       mapRef.current?.flyTo({ center: [result.lng, result.lat], zoom: 13, essential: true });
     } else if (result.kind === 'blocked') {
       setLocateError('Browser blocked location — try entering your postcode instead.');
@@ -342,6 +361,7 @@ export default function HomeSearchMap({ totalCount }: { totalCount: number }) {
       setPostcodeError("Couldn't find that postcode.");
       return;
     }
+    placeUserDot(hit.lng, hit.lat);
     mapRef.current?.flyTo({ center: [hit.lng, hit.lat], zoom: 13, essential: true });
   };
 
